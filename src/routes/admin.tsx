@@ -16,7 +16,7 @@ function Admin() {
     d.setHours(0, 0, 0, 0);
     return d;
   });
-  const [codes, setCodes] = useState<Record<string, string>>({});
+  const [codes, setCodes] = useState<Record<string, string[]>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
@@ -28,11 +28,12 @@ function Admin() {
     setError(null);
     try {
       const unsub = onSnapshot(collection(db, "drops"), (snapshot) => {
-        const newCodes: Record<string, string> = {};
+        const newCodes: Record<string, string[]> = {};
         snapshot.forEach((doc) => {
           if (doc.id.startsWith(dateKey)) {
             const hour = doc.id.split("-").pop() || "";
-            newCodes[hour] = doc.data().code;
+            const data = doc.data();
+            newCodes[hour] = Array.isArray(data.codes) ? data.codes : [data.code || ""];
           }
         });
         setCodes(newCodes);
@@ -50,18 +51,15 @@ function Admin() {
     }
   }, [dateKey]);
 
-  const handleSave = async (hour: number, code: string) => {
+  const handleSave = async (hour: number, hourCodes: string[]) => {
     const docId = `${dateKey}-${hour}`;
     setSaving(docId);
     try {
-      if (!code.trim()) {
-        await setDoc(doc(db, "drops", docId), { code: "" });
-      } else {
-        await setDoc(doc(db, "drops", docId), {
-          code: code.toUpperCase(),
-          updatedAt: new Date(),
-        });
-      }
+      const filteredCodes = hourCodes.filter(c => c.trim() !== "").map(c => c.toUpperCase());
+      await setDoc(doc(db, "drops", docId), {
+        codes: filteredCodes,
+        updatedAt: new Date(),
+      });
     } catch (error: any) {
       console.error("Error saving code:", error);
       alert("Error saving: " + error.message);
@@ -79,7 +77,7 @@ function Admin() {
 
   return (
     <main className="min-h-screen bg-[#ff9900] p-6 md:p-12 text-[#1a1a1a]">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <h1 className="text-4xl font-black tracking-tight mb-2 text-white">
@@ -124,7 +122,7 @@ function Admin() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative">
+        <div className="space-y-6 relative">
           {loading && (
             <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-sm flex items-center justify-center rounded-3xl">
               <div className="w-10 h-10 border-4 border-[#d48a94] border-t-transparent rounded-full animate-spin" />
@@ -133,34 +131,45 @@ function Admin() {
           
           {hours.map((hour) => {
             const hourLabel = hour > 12 ? `${hour - 12} PM` : hour === 12 ? "12 PM" : `${hour} AM`;
-            const currentCode = codes[String(hour)] || "";
+            const currentCodes = codes[String(hour)] || ["", "", "", "", ""];
+            // Ensure we always have 5 slots to display
+            const displayCodes = [...currentCodes, "", "", "", "", ""].slice(0, 5);
             
             return (
               <div 
                 key={hour} 
-                className="bg-white rounded-[2rem] p-6 flex flex-col gap-4 border border-[#4a90a4]/10 shadow-lg shadow-blue-900/5 hover:shadow-xl hover:border-[#4a90a4]/30 transition-all group"
+                className="bg-white rounded-[2rem] p-8 border border-[#4a90a4]/10 shadow-lg shadow-blue-900/5 transition-all group"
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-black uppercase tracking-[0.3em] text-[#1a1a1a]">{hourLabel}</span>
-                  <div className={`w-2 h-2 rounded-full ${currentCode ? 'bg-[#d48a94] animate-pulse' : 'bg-gray-200'}`} />
+                <div className="flex items-center justify-between mb-6">
+                  <span className="text-sm font-black uppercase tracking-[0.4em] text-[#1a1a1a]">{hourLabel}</span>
+                  <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${currentCodes.some(c => c) ? 'bg-[#d48a94]/10 text-[#d48a94]' : 'bg-gray-100 text-gray-400'}`}>
+                    {currentCodes.filter(c => c).length} Codes Active
+                  </div>
                 </div>
                 
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Auto-Generated"
-                    className="w-full bg-[#f8fdff] border-2 border-[#4a90a4]/5 rounded-2xl px-5 py-4 font-mono text-xl font-bold text-[#1a1a1a] focus:border-[#d48a94] focus:bg-white outline-none transition-all placeholder:text-gray-300"
-                    value={currentCode}
-                    onChange={(e) => setCodes(prev => ({ ...prev, [String(hour)]: e.target.value.toUpperCase() }))}
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-6">
+                  {displayCodes.map((code, idx) => (
+                    <input
+                      key={idx}
+                      type="text"
+                      placeholder="Voucher code"
+                      className="w-full bg-[#f8fdff] border-2 border-[#4a90a4]/5 rounded-xl px-4 py-3 font-mono text-sm font-bold text-[#1a1a1a] focus:border-[#d48a94] outline-none transition-all"
+                      value={code}
+                      onChange={(e) => {
+                        const nextCodes = [...displayCodes];
+                        nextCodes[idx] = e.target.value.toUpperCase();
+                        setCodes(prev => ({ ...prev, [String(hour)]: nextCodes }));
+                      }}
+                    />
+                  ))}
                 </div>
 
                 <button
-                  onClick={() => handleSave(hour, codes[String(hour)] || "")}
+                  onClick={() => handleSave(hour, codes[String(hour)] || displayCodes)}
                   disabled={saving === `${dateKey}-${hour}`}
-                  className="w-full py-4 rounded-2xl bg-[#4a90a4] text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-[#4a90a4]/20 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all"
+                  className="w-full py-3 rounded-xl bg-[#4a90a4] text-white font-black uppercase tracking-widest text-[10px] shadow-lg shadow-[#4a90a4]/20 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 transition-all"
                 >
-                  {saving === `${dateKey}-${hour}` ? "Syncing..." : "Update Slot"}
+                  {saving === `${dateKey}-${hour}` ? "Syncing..." : "Update Voucher Set"}
                 </button>
               </div>
             );

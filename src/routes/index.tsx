@@ -108,8 +108,6 @@ function makeVoucherCode(seed: number) {
 function Index() {
   const [now, setNow] = useState<Date>(() => new Date());
   const [mounted, setMounted] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [dbCode, setDbCode] = useState<string | null>(null);
   const lastLiveRef = useRef(false);
 
   useEffect(() => {
@@ -123,18 +121,28 @@ function Index() {
   const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const docId = `${dateKey}-${currentHour}`;
 
+  const [customCodes, setCustomCodes] = useState<string[] | null>(null);
+
   // Listen for custom code from Firestore
   useEffect(() => {
-    if (!mounted) return;
-    const unsub = onSnapshot(doc(db, "drops", docId), (doc) => {
-      if (doc.exists() && doc.data().code) {
-        setDbCode(doc.data().code);
+    const unsub = onSnapshot(doc(db, "drops", docId), (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        if (Array.isArray(data.codes) && data.codes.length > 0) {
+          setCustomCodes(data.codes);
+        } else if (data.code) {
+          setCustomCodes([data.code]);
+        } else {
+          setCustomCodes(null);
+        }
       } else {
-        setDbCode(null);
+        setCustomCodes(null);
       }
     });
     return () => unsub();
-  }, [docId, mounted]);
+  }, [docId]);
+
+  const activeVoucherCodes = customCodes || [makeVoucherCode(now)];
 
   const { next, isLive, secondsToLive } = getNextDrop(now);
 
@@ -165,26 +173,20 @@ function Index() {
 
   const schedule = Array.from({ length: DROP_END_HOUR - DROP_START_HOUR + 1 }, (_, i) => DROP_START_HOUR + i);
 
-  // Fallback voucher code keyed to current live hour
-  const liveHourKey = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${currentHour}`;
-  const autoVoucherCode = makeVoucherCode(
-    Array.from(liveHourKey).reduce((acc, c) => acc * 31 + c.charCodeAt(0), 7),
-  );
-
-  const voucherCode = dbCode || autoVoucherCode;
-
   const handlePopper = useCallback(() => popperBurst(), []);
 
-  const handleCopyVoucher = useCallback(async () => {
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+
+  const handleCopyVoucher = useCallback(async (code: string) => {
     try {
-      await navigator.clipboard.writeText(voucherCode);
-      setCopied(true);
+      await navigator.clipboard.writeText(code);
+      setCopiedCode(code);
       popperBurst();
-      setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => setCopiedCode(null), 2000);
     } catch {
-      setCopied(false);
+      setCopiedCode(null);
     }
-  }, [voucherCode]);
+  }, []);
 
   return (
     <main className="min-h-screen flex flex-col">
@@ -225,19 +227,24 @@ function Index() {
               --:--:--
             </div>
           ) : isLive ? (
-            <button
-              type="button"
-              onClick={handleCopyVoucher}
-              className="group block w-full rounded-2xl border-2 border-dashed border-primary/50 px-4 py-5 hover:border-primary transition-colors"
-              aria-label={`Copy voucher code ${voucherCode}`}
-            >
-              <div className="font-mono text-3xl md:text-5xl font-bold tracking-[0.15em] text-card-foreground break-all">
-                {voucherCode}
-              </div>
-              <div className="mt-3 text-[11px] uppercase tracking-[0.3em] text-primary font-semibold">
-                {copied ? "✓ Copied to clipboard" : "Click to copy"}
-              </div>
-            </button>
+            <div className={`grid gap-4 ${activeVoucherCodes.length > 1 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
+              {activeVoucherCodes.map((code) => (
+                <button
+                  key={code}
+                  type="button"
+                  onClick={() => handleCopyVoucher(code)}
+                  className={`group block w-full rounded-2xl border-2 border-dashed border-primary/50 px-4 py-5 hover:border-primary transition-colors ${activeVoucherCodes.length > 1 ? 'py-4' : 'py-8'}`}
+                  aria-label={`Copy voucher code ${code}`}
+                >
+                  <div className={`font-mono font-bold tracking-[0.15em] text-card-foreground break-all ${activeVoucherCodes.length > 1 ? 'text-xl md:text-2xl' : 'text-3xl md:text-5xl'}`}>
+                    {code}
+                  </div>
+                  <div className="mt-2 text-[10px] uppercase tracking-[0.2em] text-primary font-semibold">
+                    {copiedCode === code ? "✓ Copied" : "Tap to copy"}
+                  </div>
+                </button>
+              ))}
+            </div>
           ) : (
             <div className="flex items-end justify-center gap-3 md:gap-5 font-mono font-bold tabular-nums text-card-foreground">
               <TimeBlock value={countdown.h} label="hrs" />
