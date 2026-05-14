@@ -141,7 +141,7 @@ function Admin() {
                 className="bg-white rounded-[2rem] p-6 flex flex-col gap-4 border border-[#4a90a4]/10 shadow-lg shadow-blue-900/5 hover:shadow-xl hover:border-[#4a90a4]/30 transition-all group"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black uppercase tracking-[0.3em] text-[#ff9900]">{hourLabel}</span>
+                  <span className="text-xs font-black uppercase tracking-[0.3em] text-[#1a1a1a]">{hourLabel}</span>
                   <div className={`w-2 h-2 rounded-full ${currentCode ? 'bg-[#d48a94] animate-pulse' : 'bg-gray-200'}`} />
                 </div>
                 
