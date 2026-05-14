@@ -78,7 +78,7 @@ function Admin() {
   const hours = Array.from({ length: DROP_END_HOUR - DROP_START_HOUR + 1 }, (_, i) => DROP_START_HOUR + i);
 
   return (
-    <main className="min-h-screen bg-[#f8fdff] p-6 md:p-12 text-[#1a1a1a]">
+    <main className="min-h-screen bg-[#f2f5f7] p-6 md:p-12 text-[#1a1a1a]">
       <div className="max-w-4xl mx-auto">
         <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
