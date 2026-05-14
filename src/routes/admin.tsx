@@ -78,25 +78,27 @@ function Admin() {
   const hours = Array.from({ length: DROP_END_HOUR - DROP_START_HOUR + 1 }, (_, i) => DROP_START_HOUR + i);
 
   return (
-    <main className="min-h-screen bg-background p-6 md:p-12 text-foreground">
-      <div className="max-w-3xl mx-auto">
+    <main className="min-h-screen bg-[#f8fdff] p-6 md:p-12 text-[#1a1a1a]">
+      <div className="max-w-4xl mx-auto">
         <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Admin Dashboard</h1>
-            <p className="opacity-60 font-medium">Manage hourly voucher codes</p>
+            <h1 className="text-4xl font-black tracking-tight mb-2 text-[#1a1a1a]">
+              Admin <span className="text-[#ffa7b3]">Dashboard</span>
+            </h1>
+            <p className="text-[#6ac1d5] font-bold uppercase tracking-widest text-xs">Voucher Management System</p>
           </div>
           
-          <div className="flex items-center gap-3 bg-card p-2 rounded-2xl shadow-sm border border-foreground/10">
+          <div className="flex items-center gap-3 bg-white p-3 rounded-2xl shadow-xl shadow-blue-900/5 border border-[#6ac1d5]/20">
             <button 
               onClick={() => changeDay(-1)}
-              className="p-2 hover:bg-foreground/5 rounded-xl transition-colors"
+              className="p-2 hover:bg-[#6ac1d5]/10 rounded-xl transition-colors text-[#6ac1d5]"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
             </button>
             
             <input 
               type="date" 
-              className="bg-transparent border-none font-bold focus:ring-0 outline-none cursor-pointer px-2"
+              className="bg-transparent border-none font-bold text-[#1a1a1a] focus:ring-0 outline-none cursor-pointer px-2"
               value={dateKey}
               onChange={(e) => {
                 const [y, m, d] = e.target.value.split("-").map(Number);
@@ -106,24 +108,26 @@ function Admin() {
 
             <button 
               onClick={() => changeDay(1)}
-              className="p-2 hover:bg-foreground/5 rounded-xl transition-colors"
+              className="p-2 hover:bg-[#6ac1d5]/10 rounded-xl transition-colors text-[#6ac1d5]"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
             </button>
           </div>
         </header>
 
         {error && (
-          <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm">
-            <strong>Error:</strong> {error}
-            <p className="mt-1">Make sure Firestore is enabled and rules are set to allow reads/writes.</p>
+          <div className="mb-8 p-5 bg-red-50 border-2 border-red-100 rounded-2xl text-red-600 text-sm font-medium animate-shake">
+            <div className="flex items-center gap-3">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+              <span>{error}</span>
+            </div>
           </div>
         )}
 
-        <div className="space-y-4 relative">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative">
           {loading && (
-            <div className="absolute inset-0 z-10 bg-background/50 backdrop-blur-sm flex items-center justify-center rounded-2xl">
-              <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-sm flex items-center justify-center rounded-3xl">
+              <div className="w-10 h-10 border-4 border-[#ffa7b3] border-t-transparent rounded-full animate-spin" />
             </div>
           )}
           
@@ -134,17 +138,18 @@ function Admin() {
             return (
               <div 
                 key={hour} 
-                className="bg-card rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-4 border border-foreground/5 shadow-sm"
+                className="bg-white rounded-[2rem] p-6 flex flex-col gap-4 border border-[#6ac1d5]/10 shadow-lg shadow-blue-900/5 hover:shadow-xl hover:border-[#6ac1d5]/30 transition-all group"
               >
-                <div className="flex-shrink-0 w-24">
-                  <span className="text-sm font-bold uppercase tracking-widest text-primary">{hourLabel}</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black uppercase tracking-[0.3em] text-[#ff9900]">{hourLabel}</span>
+                  <div className={`w-2 h-2 rounded-full ${currentCode ? 'bg-[#ffa7b3] animate-pulse' : 'bg-gray-200'}`} />
                 </div>
                 
-                <div className="flex-1 w-full">
+                <div className="relative">
                   <input
                     type="text"
-                    placeholder="Automatic Generation (Default)"
-                    className="w-full bg-background border-2 border-foreground/10 rounded-xl px-4 py-3 font-mono text-lg focus:border-primary outline-none transition-all placeholder:opacity-20"
+                    placeholder="Auto-Generated"
+                    className="w-full bg-[#f8fdff] border-2 border-[#6ac1d5]/5 rounded-2xl px-5 py-4 font-mono text-xl font-bold text-[#1a1a1a] focus:border-[#ffa7b3] focus:bg-white outline-none transition-all placeholder:text-gray-300"
                     value={currentCode}
                     onChange={(e) => setCodes(prev => ({ ...prev, [String(hour)]: e.target.value.toUpperCase() }))}
                   />
@@ -153,9 +158,9 @@ function Admin() {
                 <button
                   onClick={() => handleSave(hour, codes[String(hour)] || "")}
                   disabled={saving === `${dateKey}-${hour}`}
-                  className="flex-shrink-0 w-full md:w-auto px-8 py-3 rounded-xl bg-foreground text-background font-bold tracking-wide hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all"
+                  className="w-full py-4 rounded-2xl bg-[#ffa7b3] text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-[#ffa7b3]/20 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all"
                 >
-                  {saving === `${dateKey}-${hour}` ? "Saving..." : "Update"}
+                  {saving === `${dateKey}-${hour}` ? "Syncing..." : "Update Slot"}
                 </button>
               </div>
             );
