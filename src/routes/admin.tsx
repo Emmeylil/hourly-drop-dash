@@ -78,14 +78,14 @@ function Admin() {
   const hours = Array.from({ length: DROP_END_HOUR - DROP_START_HOUR + 1 }, (_, i) => DROP_START_HOUR + i);
 
   return (
-    <main className="min-h-screen bg-[#f2f5f7] p-6 md:p-12 text-[#1a1a1a]">
+    <main className="min-h-screen bg-[#ff9900] p-6 md:p-12 text-[#1a1a1a]">
       <div className="max-w-4xl mx-auto">
         <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <h1 className="text-4xl font-black tracking-tight mb-2 text-[#1a1a1a]">
-              Admin <span className="text-[#d48a94]">Dashboard</span>
+            <h1 className="text-4xl font-black tracking-tight mb-2 text-white">
+              Admin <span className="text-[#1a1a1a]">Dashboard</span>
             </h1>
-            <p className="text-[#4a90a4] font-bold uppercase tracking-widest text-xs">Voucher Management System</p>
+            <p className="text-white/80 font-bold uppercase tracking-widest text-xs">Voucher Management System</p>
           </div>
           
           <div className="flex items-center gap-3 bg-white p-3 rounded-2xl shadow-xl shadow-blue-900/5 border border-[#4a90a4]/20">
