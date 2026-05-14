@@ -9,6 +9,8 @@ export default async (req, res) => {
     const host = req.headers.host;
     const url = new URL(req.url, `${protocol}://${host}`);
 
+    console.log(`Handling request for: ${url.pathname}`);
+
     // Fallback static file serving for assets
     if (url.pathname.startsWith('/assets/')) {
       const filePath = path.join(process.cwd(), 'dist', 'client', url.pathname);
