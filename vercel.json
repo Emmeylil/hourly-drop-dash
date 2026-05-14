@@ -2,7 +2,7 @@
   "version": 2,
   "rewrites": [
     {
-      "source": "/((?!assets/|favicon.ico).*)",
+      "source": "/(.*)",
       "destination": "/api/index"
     }
   ]
