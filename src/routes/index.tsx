@@ -131,26 +131,35 @@ function Index() {
   const timeline = useMemo(() => {
     const allVouchers: { code: string, date: Date }[] = [];
     
-    Object.values(scheduleData).forEach(slot => {
-      slot.vouchers.forEach(v => {
-        const [h, m] = v.time.split(":").map(Number);
-        const d = new Date(now);
-        d.setHours(h, m, 0, 0);
-        allVouchers.push({ code: v.code, date: d });
+    // 1. Generate default hourly schedule first
+    for (let hour = DROP_START_HOUR; hour <= DROP_END_HOUR; hour++) {
+      const d = new Date(now);
+      d.setHours(hour, 0, 0, 0);
+      allVouchers.push({ 
+        code: makeVoucherCode(Array.from(`${dateKey}-${hour}`).reduce((acc, c) => acc * 31 + c.charCodeAt(0), 7)), 
+        date: d,
+        isDefault: true
       });
-    });
+    }
 
-    // If no custom data, use default hourly schedule
-    if (allVouchers.length === 0) {
-      for (let hour = DROP_START_HOUR; hour <= DROP_END_HOUR; hour++) {
-        const d = new Date(now);
-        d.setHours(hour, 0, 0, 0);
-        allVouchers.push({ 
-          code: makeVoucherCode(Array.from(`${dateKey}-${hour}`).reduce((acc, c) => acc * 31 + c.charCodeAt(0), 7)), 
-          date: d 
+    // 2. Merge custom data
+    Object.entries(scheduleData).forEach(([slotHour, slot]) => {
+      if (slot.vouchers && slot.vouchers.length > 0) {
+        // Remove default vouchers for this specific slot hour if custom ones exist
+        const hInt = parseInt(slotHour);
+        const filtered = allVouchers.filter(v => v.date.getHours() !== hInt || !v.isDefault);
+        allVouchers.length = 0;
+        allVouchers.push(...filtered);
+
+        // Add the custom vouchers
+        slot.vouchers.forEach(v => {
+          const [h, m] = v.time.split(":").map(Number);
+          const d = new Date(now);
+          d.setHours(h, m, 0, 0);
+          allVouchers.push({ code: v.code, date: d, isDefault: false });
         });
       }
-    }
+    });
 
     return allVouchers.sort((a, b) => a.date.getTime() - b.date.getTime());
   }, [scheduleData, now, dateKey]);
