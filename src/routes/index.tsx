@@ -232,19 +232,9 @@ function Index() {
           </div>
         </div>
 
-        <p className="mt-8 text-sm text-foreground/80 animate-float-in">
-          Standard terms apply. Limited quantity per drop.
-        </p>
+
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 rounded-full bg-card text-card-foreground px-7 py-3.5 text-sm font-semibold tracking-wide hover:scale-[1.02] active:scale-[0.98] transition-transform"
-            style={{ boxShadow: "var(--shadow-card)" }}
-          >
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse-dot" />
-            Notify me before next drop
-          </button>
           <button
             type="button"
             onClick={handlePopper}
