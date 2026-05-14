@@ -1,17 +1,60 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import confetti from "canvas-confetti";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Voucher Drops — Hourly, 8am to 7pm" },
-      { name: "description", content: "Fresh vouchers drop on the homepage every hour from 8am to 7pm. Set your alarm and grab yours." },
-      { property: "og:title", content: "Voucher Drops — Hourly, 8am to 7pm" },
-      { property: "og:description", content: "Fresh vouchers drop on the homepage every hour from 8am to 7pm." },
+      { title: "Anniversary Voucher Drops — Hourly, 8am to 7pm" },
+      { name: "description", content: "Celebrate our anniversary! Fresh vouchers drop on the homepage every hour from 8am to 7pm." },
+      { property: "og:title", content: "Anniversary Voucher Drops — Hourly, 8am to 7pm" },
+      { property: "og:description", content: "Celebrate our anniversary! Fresh vouchers drop on the homepage every hour from 8am to 7pm." },
     ],
   }),
   component: Index,
 });
+
+const PARTY_COLORS = ["#ff5e3a", "#ffd166", "#ef476f", "#06d6a0", "#118ab2", "#ffffff"];
+
+function fireConfetti() {
+  if (typeof window === "undefined") return;
+  const end = Date.now() + 800;
+  const frame = () => {
+    confetti({
+      particleCount: 6,
+      angle: 60,
+      spread: 70,
+      startVelocity: 55,
+      origin: { x: 0, y: 0.9 },
+      colors: PARTY_COLORS,
+      scalar: 1.1,
+    });
+    confetti({
+      particleCount: 6,
+      angle: 120,
+      spread: 70,
+      startVelocity: 55,
+      origin: { x: 1, y: 0.9 },
+      colors: PARTY_COLORS,
+      scalar: 1.1,
+    });
+    if (Date.now() < end) requestAnimationFrame(frame);
+  };
+  frame();
+}
+
+function popperBurst() {
+  if (typeof window === "undefined") return;
+  confetti({
+    particleCount: 120,
+    spread: 100,
+    startVelocity: 45,
+    origin: { y: 0.6 },
+    colors: PARTY_COLORS,
+    shapes: ["square", "circle"],
+    scalar: 1.2,
+  });
+}
 
 const DROP_START_HOUR = 8;
 const DROP_END_HOUR = 19; // 7pm — last drop at 19:00
