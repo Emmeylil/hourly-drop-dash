@@ -1,17 +1,60 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import confetti from "canvas-confetti";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Voucher Drops — Hourly, 8am to 7pm" },
-      { name: "description", content: "Fresh vouchers drop on the homepage every hour from 8am to 7pm. Set your alarm and grab yours." },
-      { property: "og:title", content: "Voucher Drops — Hourly, 8am to 7pm" },
-      { property: "og:description", content: "Fresh vouchers drop on the homepage every hour from 8am to 7pm." },
+      { title: "Anniversary Voucher Drops — Hourly, 8am to 7pm" },
+      { name: "description", content: "Celebrate our anniversary! Fresh vouchers drop on the homepage every hour from 8am to 7pm." },
+      { property: "og:title", content: "Anniversary Voucher Drops — Hourly, 8am to 7pm" },
+      { property: "og:description", content: "Celebrate our anniversary! Fresh vouchers drop on the homepage every hour from 8am to 7pm." },
     ],
   }),
   component: Index,
 });
+
+const PARTY_COLORS = ["#ff5e3a", "#ffd166", "#ef476f", "#06d6a0", "#118ab2", "#ffffff"];
+
+function fireConfetti() {
+  if (typeof window === "undefined") return;
+  const end = Date.now() + 800;
+  const frame = () => {
+    confetti({
+      particleCount: 6,
+      angle: 60,
+      spread: 70,
+      startVelocity: 55,
+      origin: { x: 0, y: 0.9 },
+      colors: PARTY_COLORS,
+      scalar: 1.1,
+    });
+    confetti({
+      particleCount: 6,
+      angle: 120,
+      spread: 70,
+      startVelocity: 55,
+      origin: { x: 1, y: 0.9 },
+      colors: PARTY_COLORS,
+      scalar: 1.1,
+    });
+    if (Date.now() < end) requestAnimationFrame(frame);
+  };
+  frame();
+}
+
+function popperBurst() {
+  if (typeof window === "undefined") return;
+  confetti({
+    particleCount: 120,
+    spread: 100,
+    startVelocity: 45,
+    origin: { y: 0.6 },
+    colors: PARTY_COLORS,
+    shapes: ["square", "circle"],
+    scalar: 1.2,
+  });
+}
 
 const DROP_START_HOUR = 8;
 const DROP_END_HOUR = 19; // 7pm — last drop at 19:00
@@ -51,18 +94,35 @@ function formatCountdown(total: number) {
 
 function Index() {
   const [now, setNow] = useState<Date>(() => new Date());
+  const lastLiveRef = useRef(false);
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
 
+  useEffect(() => {
+    const t = setTimeout(popperBurst, 350);
+    return () => clearTimeout(t);
+  }, []);
+
   const { next, isLive, secondsToLive } = getNextDrop(now);
+
+  useEffect(() => {
+    if (isLive && !lastLiveRef.current) {
+      fireConfetti();
+      popperBurst();
+    }
+    lastLiveRef.current = isLive;
+  }, [isLive]);
+
   const countdown = formatCountdown(secondsToLive);
   const nextLabel = next.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 
   const schedule = Array.from({ length: DROP_END_HOUR - DROP_START_HOUR + 1 }, (_, i) => DROP_START_HOUR + i);
   const currentHour = now.getHours();
+
+  const handlePopper = useCallback(() => popperBurst(), []);
 
   return (
     <main className="min-h-screen flex flex-col">
@@ -70,20 +130,23 @@ function Index() {
       <header className="flex items-center justify-between px-6 py-6 md:px-12">
         <div className="flex items-center gap-2 font-semibold tracking-tight text-foreground">
           <span className="inline-block w-2.5 h-2.5 rounded-full bg-card animate-pulse-dot" />
-          Voucher Drop
+          Anniversary Voucher Drop
         </div>
         <div className="text-xs uppercase tracking-[0.2em] text-foreground/70">
-          Hourly · 8am – 7pm
+          🎉 Hourly · 8am – 7pm
         </div>
       </header>
 
       {/* Hero */}
       <section className="flex-1 flex flex-col items-center justify-center px-6 pb-16 text-center">
+        <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-card mb-3 animate-float-in">
+          🎊 Celebrating our anniversary 🎊
+        </p>
         <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-card mb-6 animate-float-in">
           {isLive ? "Drop active now" : "Next drop in"}
         </p>
 
-        <h1 className="sr-only">Hourly Voucher Drops</h1>
+        <h1 className="sr-only">Anniversary Hourly Voucher Drops</h1>
 
         {/* Card */}
         <div
@@ -118,14 +181,24 @@ function Index() {
           Standard terms apply. Limited quantity per drop.
         </p>
 
-        <button
-          type="button"
-          className="mt-10 inline-flex items-center gap-2 rounded-full bg-card text-card-foreground px-7 py-3.5 text-sm font-semibold tracking-wide hover:scale-[1.02] active:scale-[0.98] transition-transform"
-          style={{ boxShadow: "var(--shadow-card)" }}
-        >
-          <span className="w-2 h-2 rounded-full bg-primary animate-pulse-dot" />
-          Notify me before next drop
-        </button>
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+          <button
+            type="button"
+            onClick={handlePopper}
+            className="inline-flex items-center gap-2 rounded-full bg-card text-card-foreground px-7 py-3.5 text-sm font-semibold tracking-wide hover:scale-[1.02] active:scale-[0.98] transition-transform"
+            style={{ boxShadow: "var(--shadow-card)" }}
+          >
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse-dot" />
+            Notify me before next drop
+          </button>
+          <button
+            type="button"
+            onClick={handlePopper}
+            className="inline-flex items-center gap-2 rounded-full bg-foreground/10 text-foreground px-7 py-3.5 text-sm font-semibold tracking-wide hover:bg-foreground/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+          >
+            🎉 Pop the popper
+          </button>
+        </div>
       </section>
 
       {/* Schedule */}
