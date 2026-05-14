@@ -16,7 +16,7 @@ function Admin() {
     d.setHours(0, 0, 0, 0);
     return d;
   });
-  const [codes, setCodes] = useState<Record<string, string[]>>({});
+  const [codes, setCodes] = useState<Record<string, { codes: string[], startTime: string }>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
@@ -28,12 +28,15 @@ function Admin() {
     setError(null);
     try {
       const unsub = onSnapshot(collection(db, "drops"), (snapshot) => {
-        const newCodes: Record<string, string[]> = {};
+        const newCodes: Record<string, { codes: string[], startTime: string }> = {};
         snapshot.forEach((doc) => {
           if (doc.id.startsWith(dateKey)) {
             const hour = doc.id.split("-").pop() || "";
             const data = doc.data();
-            newCodes[hour] = Array.isArray(data.codes) ? data.codes : [data.code || ""];
+            newCodes[hour] = {
+              codes: Array.isArray(data.codes) ? data.codes : [data.code || ""],
+              startTime: data.startTime || `${hour.padStart(2, '0')}:00`
+            };
           }
         });
         setCodes(newCodes);
@@ -51,13 +54,14 @@ function Admin() {
     }
   }, [dateKey]);
 
-  const handleSave = async (hour: number, hourCodes: string[]) => {
+  const handleSave = async (hour: number, hourCodes: string[], startTime: string) => {
     const docId = `${dateKey}-${hour}`;
     setSaving(docId);
     try {
       const filteredCodes = hourCodes.filter(c => c.trim() !== "").map(c => c.toUpperCase());
       await setDoc(doc(db, "drops", docId), {
         codes: filteredCodes,
+        startTime: startTime,
         updatedAt: new Date(),
       });
     } catch (error: any) {
@@ -130,46 +134,68 @@ function Admin() {
           )}
           
           {hours.map((hour) => {
-            const hourLabel = hour > 12 ? `${hour - 12} PM` : hour === 12 ? "12 PM" : `${hour} AM`;
-            const currentCodes = codes[String(hour)] || ["", "", "", "", ""];
-            // Ensure we always have 5 slots to display
-            const displayCodes = [...currentCodes, "", "", "", "", ""].slice(0, 5);
+            const data = codes[String(hour)] || { codes: ["", "", "", "", ""], startTime: `${String(hour).padStart(2, '0')}:00` };
+            const currentCodes = data.codes;
+            const startTime = data.startTime;
             
             return (
               <div 
                 key={hour} 
                 className="bg-white rounded-[2rem] p-8 border border-[#4a90a4]/10 shadow-lg shadow-blue-900/5 transition-all group"
               >
-                <div className="flex items-center justify-between mb-6">
-                  <span className="text-sm font-black uppercase tracking-[0.4em] text-[#1a1a1a]">{hourLabel}</span>
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm font-black uppercase tracking-[0.4em] text-[#1a1a1a]">Slot {hour}</span>
+                    <div className="flex items-center gap-2 bg-[#f8fdff] px-3 py-1.5 rounded-xl border border-[#4a90a4]/10">
+                      <span className="text-[10px] font-bold text-[#4a90a4] uppercase">Live At:</span>
+                      <input 
+                        type="time" 
+                        className="bg-transparent border-none p-0 text-sm font-black text-[#1a1a1a] focus:ring-0 outline-none w-20"
+                        value={startTime}
+                        onChange={(e) => {
+                          setCodes(prev => ({ 
+                            ...prev, 
+                            [String(hour)]: { ...(prev[String(hour)] || data), startTime: e.target.value } 
+                          }));
+                        }}
+                      />
+                    </div>
+                  </div>
                   <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${currentCodes.some(c => c) ? 'bg-[#d48a94]/10 text-[#d48a94]' : 'bg-gray-100 text-gray-400'}`}>
                     {currentCodes.filter(c => c).length} Codes Active
                   </div>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-6">
-                  {displayCodes.map((code, idx) => (
-                    <input
-                      key={idx}
-                      type="text"
-                      placeholder="Voucher code"
-                      className="w-full bg-[#f8fdff] border-2 border-[#4a90a4]/5 rounded-xl px-4 py-3 font-mono text-sm font-bold text-[#1a1a1a] focus:border-[#d48a94] outline-none transition-all"
-                      value={code}
-                      onChange={(e) => {
-                        const nextCodes = [...displayCodes];
-                        nextCodes[idx] = e.target.value.toUpperCase();
-                        setCodes(prev => ({ ...prev, [String(hour)]: nextCodes }));
-                      }}
-                    />
-                  ))}
+                  {Array.from({ length: 5 }).map((_, idx) => {
+                    const code = currentCodes[idx] || "";
+                    return (
+                      <input
+                        key={idx}
+                        type="text"
+                        placeholder="Voucher code"
+                        className="w-full bg-[#f8fdff] border-2 border-[#4a90a4]/5 rounded-xl px-4 py-3 font-mono text-sm font-bold text-[#1a1a1a] focus:border-[#d48a94] outline-none transition-all"
+                        value={code}
+                        onChange={(e) => {
+                          const nextCodes = [...currentCodes];
+                          while (nextCodes.length < 5) nextCodes.push("");
+                          nextCodes[idx] = e.target.value.toUpperCase();
+                          setCodes(prev => ({ 
+                            ...prev, 
+                            [String(hour)]: { ...(prev[String(hour)] || data), codes: nextCodes } 
+                          }));
+                        }}
+                      />
+                    );
+                  })}
                 </div>
 
                 <button
-                  onClick={() => handleSave(hour, codes[String(hour)] || displayCodes)}
+                  onClick={() => handleSave(hour, codes[String(hour)]?.codes || currentCodes, codes[String(hour)]?.startTime || startTime)}
                   disabled={saving === `${dateKey}-${hour}`}
-                  className="w-full py-3 rounded-xl bg-[#4a90a4] text-white font-black uppercase tracking-widest text-[10px] shadow-lg shadow-[#4a90a4]/20 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 transition-all"
+                  className="w-full py-4 rounded-xl bg-[#4a90a4] text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-[#4a90a4]/20 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 transition-all"
                 >
-                  {saving === `${dateKey}-${hour}` ? "Syncing..." : "Update Voucher Set"}
+                  {saving === `${dateKey}-${hour}` ? "Syncing..." : "Update Schedule & Vouchers"}
                 </button>
               </div>
             );

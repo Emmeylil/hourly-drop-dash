@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import confetti from "canvas-confetti";
 import { db } from "../lib/firebase";
-import { doc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot, collection, query, where } from "firebase/firestore";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -61,27 +61,6 @@ function popperBurst() {
 const DROP_START_HOUR = 8;
 const DROP_END_HOUR = 19; // 7pm — last drop at 19:00
 
-function getNextDrop(now: Date): { next: Date; isLive: boolean; secondsToLive: number } {
-  const next = new Date(now);
-  next.setMinutes(0, 0, 0);
-  next.setHours(now.getHours() + 1);
-
-  // If current time is within an active drop hour and just started (first 60s), treat as LIVE
-  const isLive =
-    now.getHours() >= DROP_START_HOUR &&
-    now.getHours() <= DROP_END_HOUR &&
-    now.getMinutes() === 0 &&
-    now.getSeconds() < 60;
-
-  // If next drop is past end-of-day, jump to tomorrow 8am
-  if (next.getHours() > DROP_END_HOUR || next.getHours() < DROP_START_HOUR) {
-    next.setDate(next.getDate() + (now.getHours() >= DROP_END_HOUR ? 1 : 0));
-    next.setHours(DROP_START_HOUR, 0, 0, 0);
-  }
-
-  const secondsToLive = Math.max(0, Math.floor((next.getTime() - now.getTime()) / 1000));
-  return { next, isLive, secondsToLive };
-}
 
 function formatCountdown(total: number) {
   const h = Math.floor(total / 3600);
@@ -121,30 +100,84 @@ function Index() {
   const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const docId = `${dateKey}-${currentHour}`;
 
-  const [customCodes, setCustomCodes] = useState<string[] | null>(null);
+  const [scheduleData, setScheduleData] = useState<Record<string, { codes: string[], startTime: string }>>({});
 
-  // Listen for custom code from Firestore
+  // Listen for all drops for today
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "drops", docId), (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        if (Array.isArray(data.codes) && data.codes.length > 0) {
-          setCustomCodes(data.codes);
-        } else if (data.code) {
-          setCustomCodes([data.code]);
-        } else {
-          setCustomCodes(null);
-        }
-      } else {
-        setCustomCodes(null);
-      }
+    const q = query(collection(db, "drops"), where("__name__", ">=", dateKey), where("__name__", "<=", `${dateKey}-\uf8ff`));
+    const unsub = onSnapshot(q, (snapshot) => {
+      const data: Record<string, { codes: string[], startTime: string }> = {};
+      snapshot.forEach((doc) => {
+        const hour = doc.id.split("-").pop() || "";
+        const d = doc.data();
+        data[hour] = {
+          codes: Array.isArray(d.codes) ? d.codes : [d.code || ""],
+          startTime: d.startTime || `${hour.padStart(2, '0')}:00`
+        };
+      });
+      setScheduleData(data);
     });
     return () => unsub();
-  }, [docId]);
+  }, [dateKey]);
 
-  const activeVoucherCodes = customCodes || [makeVoucherCode(now)];
+  // Derived active codes and next drop info
+  const dropSchedule = useMemo(() => {
+    const items = Object.entries(scheduleData).map(([hour, data]) => {
+      const [h, m] = data.startTime.split(":").map(Number);
+      const startTime = new Date(now);
+      startTime.setHours(h, m, 0, 0);
+      return { ...data, date: startTime, hour: Number(hour) };
+    }).sort((a, b) => a.date.getTime() - b.date.getTime());
 
-  const { next, isLive, secondsToLive } = getNextDrop(now);
+    // If empty, use default hourly schedule
+    if (items.length === 0) {
+      return Array.from({ length: DROP_END_HOUR - DROP_START_HOUR + 1 }, (_, i) => {
+        const hour = DROP_START_HOUR + i;
+        const d = new Date(now);
+        d.setHours(hour, 0, 0, 0);
+        return { 
+          hour, 
+          date: d, 
+          codes: [makeVoucherCode(Array.from(`${dateKey}-${hour}`).reduce((acc, c) => acc * 31 + c.charCodeAt(0), 7))], 
+          startTime: `${String(hour).padStart(2, '0')}:00` 
+        };
+      });
+    }
+    return items;
+  }, [scheduleData, now, dateKey]);
+
+  const { activeVoucherCodes, next, isLive, secondsToLive } = useMemo(() => {
+    const nowTime = now.getTime();
+    
+    // Find active drop (the most recent one that has already started)
+    const startedDrops = dropSchedule.filter(d => d.date.getTime() <= nowTime);
+    const currentDrop = startedDrops[startedDrops.length - 1] || dropSchedule[0];
+    
+    // Find next drop
+    const futureDrops = dropSchedule.filter(d => d.date.getTime() > nowTime);
+    let nextDrop = futureDrops[0];
+    
+    // If no future drops today, use tomorrow's first drop (default 8am for now)
+    if (!nextDrop) {
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(DROP_START_HOUR, 0, 0, 0);
+      nextDrop = { date: tomorrow } as any;
+    }
+
+    // Live if we just crossed a drop's start time (within 60s)
+    const live = dropSchedule.some(d => {
+      const diff = nowTime - d.date.getTime();
+      return diff >= 0 && diff < 60000;
+    });
+
+    return {
+      activeVoucherCodes: currentDrop?.codes || [],
+      next: nextDrop.date,
+      isLive: live,
+      secondsToLive: Math.max(0, Math.floor((nextDrop.date.getTime() - nowTime) / 1000))
+    };
+  }, [dropSchedule, now]);
 
   // Auto-pop on first mount
   useEffect(() => {
