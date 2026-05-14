@@ -103,6 +103,8 @@ function makeVoucherCode(seed: number) {
     out += alphabet[x % alphabet.length];
   }
   return `ANNIV-${out}`;
+}
+
 function Index() {
   const [now, setNow] = useState<Date>(() => new Date());
   const [mounted, setMounted] = useState(false);
