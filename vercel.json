@@ -2,11 +2,7 @@
   "version": 2,
   "rewrites": [
     {
-      "source": "/assets/(.*)",
-      "destination": "/dist/client/assets/$1"
-    },
-    {
-      "source": "/(.*)",
+      "source": "/((?!assets/|favicon.ico).*)",
       "destination": "/api/index"
     }
   ]
