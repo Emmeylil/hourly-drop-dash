@@ -158,7 +158,7 @@ function Admin() {
                 <button
                   onClick={() => handleSave(hour, codes[String(hour)] || "")}
                   disabled={saving === `${dateKey}-${hour}`}
-                  className="w-full py-4 rounded-2xl bg-[#ffa7b3] text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-[#ffa7b3]/20 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all"
+                  className="w-full py-4 rounded-2xl bg-[#6ac1d5] text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-[#6ac1d5]/20 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all"
                 >
                   {saving === `${dateKey}-${hour}` ? "Syncing..." : "Update Slot"}
                 </button>
