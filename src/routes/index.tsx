@@ -164,20 +164,21 @@ function Index() {
     return allVouchers.sort((a, b) => a.date.getTime() - b.date.getTime());
   }, [scheduleData, now, dateKey]);
 
-  const { activeVoucherCodes, next, isLive, secondsToLive } = useMemo(() => {
+  const { activeVoucherCode, next, isLive, secondsToLive } = useMemo(() => {
     const nowTime = now.getTime();
     
     // Vouchers that have already started
     const pastVouchers = timeline.filter(v => v.date.getTime() <= nowTime);
     
-    // We only want to show the codes from the "current" drop set? 
-    // Or just all of them? The user said "each go live voucher code should be here".
-    // I'll show all codes from the LATEST drop set that has started.
-    
+    // Find the LATEST drop event
     const latestStartTime = pastVouchers.length > 0 ? pastVouchers[pastVouchers.length - 1].date.getTime() : 0;
-    const currentCodes = pastVouchers
-      .filter(v => v.date.getTime() === latestStartTime)
-      .map(v => v.code);
+    const currentSet = pastVouchers.filter(v => v.date.getTime() === latestStartTime);
+    
+    // Pick ONE random code from the current set (using a stable seed based on startTime and browser/device if possible, 
+    // but for now just random is fine as requested)
+    const randomCode = currentSet.length > 0 
+      ? currentSet[Math.floor((latestStartTime % 1000 + (typeof window !== 'undefined' ? window.navigator.userAgent.length : 0)) % currentSet.length)].code 
+      : "";
 
     // Find next upcoming voucher
     const futureVouchers = timeline.filter(v => v.date.getTime() > nowTime);
@@ -190,14 +191,14 @@ function Index() {
       nextDate = tomorrow;
     }
 
-    // Live if we just crossed ANY voucher's start time
+    // Live if we are within 20 seconds of ANY voucher's start time
     const live = timeline.some(v => {
       const diff = nowTime - v.date.getTime();
-      return diff >= 0 && diff < 60000;
+      return diff >= 0 && diff < 20000; // 20 seconds window
     });
 
     return {
-      activeVoucherCodes: currentCodes,
+      activeVoucherCode: randomCode,
       next: nextDate,
       isLive: live,
       secondsToLive: Math.max(0, Math.floor((nextDate.getTime() - nowTime) / 1000))
@@ -285,31 +286,19 @@ function Index() {
               --:--:--
             </div>
           ) : isLive ? (
-            <div className="space-y-6">
-              <div className="flex items-center justify-center gap-2 font-mono text-sm font-bold text-primary/70">
-                <span className="uppercase tracking-widest text-[9px]">Expires in:</span>
-                <span>{countdown.h}:{countdown.m}:{countdown.s}</span>
+            <button
+              type="button"
+              onClick={() => handleCopyVoucher(activeVoucherCode)}
+              className="group block w-full rounded-2xl border-2 border-dashed border-primary/50 px-4 py-8 hover:border-primary transition-colors"
+              aria-label={`Copy voucher code ${activeVoucherCode}`}
+            >
+              <div className="font-mono text-3xl md:text-5xl font-bold tracking-[0.15em] text-card-foreground break-all uppercase">
+                {activeVoucherCode}
               </div>
-
-              <div className={`grid gap-4 ${activeVoucherCodes.length > 1 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
-                {activeVoucherCodes.map((code) => (
-                  <button
-                    key={code}
-                    type="button"
-                    onClick={() => handleCopyVoucher(code)}
-                    className={`group block w-full rounded-2xl border-2 border-dashed border-primary/50 px-4 py-5 hover:border-primary transition-colors ${activeVoucherCodes.length > 1 ? 'py-4' : 'py-8'}`}
-                    aria-label={`Copy voucher code ${code}`}
-                  >
-                    <div className={`font-mono font-bold tracking-[0.15em] text-card-foreground break-all ${activeVoucherCodes.length > 1 ? 'text-xl md:text-2xl' : 'text-3xl md:text-5xl'}`}>
-                      {code}
-                    </div>
-                    <div className="mt-2 text-[10px] uppercase tracking-[0.2em] text-primary font-semibold">
-                      {copiedCode === code ? "✓ Copied" : "Tap to copy"}
-                    </div>
-                  </button>
-                ))}
+              <div className="mt-3 text-[11px] uppercase tracking-[0.3em] text-primary font-semibold">
+                {copiedCode === activeVoucherCode ? "✓ Copied to clipboard" : "Tap to copy"}
               </div>
-            </div>
+            </button>
           ) : (
             <div className="flex items-end justify-center gap-3 md:gap-5 font-mono font-bold tabular-nums text-card-foreground">
               <TimeBlock value={countdown.h} label="hrs" />
