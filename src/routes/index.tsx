@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import confetti from "canvas-confetti";
+import { db } from "../lib/firebase";
+import { doc, onSnapshot } from "firebase/firestore";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -101,12 +103,11 @@ function makeVoucherCode(seed: number) {
     out += alphabet[x % alphabet.length];
   }
   return `ANNIV-${out}`;
-}
-
 function Index() {
   const [now, setNow] = useState<Date>(() => new Date());
   const [mounted, setMounted] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [dbCode, setDbCode] = useState<string | null>(null);
   const lastLiveRef = useRef(false);
 
   useEffect(() => {
@@ -115,6 +116,23 @@ function Index() {
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
+
+  const currentHour = now.getHours();
+  const dateKey = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+  const docId = `${dateKey}-${currentHour}`;
+
+  // Listen for custom code from Firestore
+  useEffect(() => {
+    if (!mounted) return;
+    const unsub = onSnapshot(doc(db, "drops", docId), (doc) => {
+      if (doc.exists() && doc.data().code) {
+        setDbCode(doc.data().code);
+      } else {
+        setDbCode(null);
+      }
+    });
+    return () => unsub();
+  }, [docId, mounted]);
 
   const { next, isLive, secondsToLive } = getNextDrop(now);
 
@@ -144,13 +162,14 @@ function Index() {
     : "--:--";
 
   const schedule = Array.from({ length: DROP_END_HOUR - DROP_START_HOUR + 1 }, (_, i) => DROP_START_HOUR + i);
-  const currentHour = now.getHours();
 
-  // Voucher code keyed to current live hour
+  // Fallback voucher code keyed to current live hour
   const liveHourKey = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${currentHour}`;
-  const voucherCode = makeVoucherCode(
+  const autoVoucherCode = makeVoucherCode(
     Array.from(liveHourKey).reduce((acc, c) => acc * 31 + c.charCodeAt(0), 7),
   );
+
+  const voucherCode = dbCode || autoVoucherCode;
 
   const handlePopper = useCallback(() => popperBurst(), []);
 
