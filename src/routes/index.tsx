@@ -94,27 +94,25 @@ function formatCountdown(total: number) {
 
 function Index() {
   const [now, setNow] = useState<Date>(() => new Date());
+  const [mounted, setMounted] = useState(false);
   const lastLiveRef = useRef(false);
 
   useEffect(() => {
+    setMounted(true);
+    setNow(new Date());
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
-  }, []);
-
-  useEffect(() => {
-    const t = setTimeout(popperBurst, 350);
-    return () => clearTimeout(t);
   }, []);
 
   const { next, isLive, secondsToLive } = getNextDrop(now);
 
   useEffect(() => {
+    if (!mounted) return;
     if (isLive && !lastLiveRef.current) {
       fireConfetti();
-      popperBurst();
     }
     lastLiveRef.current = isLive;
-  }, [isLive]);
+  }, [isLive, mounted]);
 
   const countdown = formatCountdown(secondsToLive);
   const nextLabel = next.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
