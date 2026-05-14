@@ -100,84 +100,100 @@ function Index() {
   const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const docId = `${dateKey}-${currentHour}`;
 
-  const [scheduleData, setScheduleData] = useState<Record<string, { codes: string[], startTime: string }>>({});
+  const [scheduleData, setScheduleData] = useState<Record<string, { vouchers: { code: string, time: string }[] }>>({});
 
   // Listen for all drops for today
   useEffect(() => {
     const q = query(collection(db, "drops"), where("__name__", ">=", dateKey), where("__name__", "<=", `${dateKey}-\uf8ff`));
     const unsub = onSnapshot(q, (snapshot) => {
-      const data: Record<string, { codes: string[], startTime: string }> = {};
+      const data: Record<string, { vouchers: { code: string, time: string }[] }> = {};
       snapshot.forEach((doc) => {
         const hour = doc.id.split("-").pop() || "";
         const d = doc.data();
-        data[hour] = {
-          codes: Array.isArray(d.codes) ? d.codes : [d.code || ""],
-          startTime: d.startTime || `${hour.padStart(2, '0')}:00`
-        };
+        
+        let vouchers: { code: string, time: string }[] = [];
+        if (Array.isArray(d.vouchers)) {
+          vouchers = d.vouchers;
+        } else if (Array.isArray(d.codes)) {
+          vouchers = d.codes.map((c: string) => ({ code: c, time: d.startTime || `${hour.padStart(2, '0')}:00` }));
+        } else if (d.code) {
+          vouchers = [{ code: d.code, time: d.startTime || `${hour.padStart(2, '0')}:00` }];
+        }
+        
+        data[hour] = { vouchers };
       });
       setScheduleData(data);
     });
     return () => unsub();
   }, [dateKey]);
 
-  // Derived active codes and next drop info
-  const dropSchedule = useMemo(() => {
-    const items = Object.entries(scheduleData).map(([hour, data]) => {
-      const [h, m] = data.startTime.split(":").map(Number);
-      const startTime = new Date(now);
-      startTime.setHours(h, m, 0, 0);
-      return { ...data, date: startTime, hour: Number(hour) };
-    }).sort((a, b) => a.date.getTime() - b.date.getTime());
+  // Flatten all vouchers into a single timeline
+  const timeline = useMemo(() => {
+    const allVouchers: { code: string, date: Date }[] = [];
+    
+    Object.values(scheduleData).forEach(slot => {
+      slot.vouchers.forEach(v => {
+        const [h, m] = v.time.split(":").map(Number);
+        const d = new Date(now);
+        d.setHours(h, m, 0, 0);
+        allVouchers.push({ code: v.code, date: d });
+      });
+    });
 
-    // If empty, use default hourly schedule
-    if (items.length === 0) {
-      return Array.from({ length: DROP_END_HOUR - DROP_START_HOUR + 1 }, (_, i) => {
-        const hour = DROP_START_HOUR + i;
+    // If no custom data, use default hourly schedule
+    if (allVouchers.length === 0) {
+      for (let hour = DROP_START_HOUR; hour <= DROP_END_HOUR; hour++) {
         const d = new Date(now);
         d.setHours(hour, 0, 0, 0);
-        return { 
-          hour, 
-          date: d, 
-          codes: [makeVoucherCode(Array.from(`${dateKey}-${hour}`).reduce((acc, c) => acc * 31 + c.charCodeAt(0), 7))], 
-          startTime: `${String(hour).padStart(2, '0')}:00` 
-        };
-      });
+        allVouchers.push({ 
+          code: makeVoucherCode(Array.from(`${dateKey}-${hour}`).reduce((acc, c) => acc * 31 + c.charCodeAt(0), 7)), 
+          date: d 
+        });
+      }
     }
-    return items;
+
+    return allVouchers.sort((a, b) => a.date.getTime() - b.date.getTime());
   }, [scheduleData, now, dateKey]);
 
   const { activeVoucherCodes, next, isLive, secondsToLive } = useMemo(() => {
     const nowTime = now.getTime();
     
-    // Find active drop (the most recent one that has already started)
-    const startedDrops = dropSchedule.filter(d => d.date.getTime() <= nowTime);
-    const currentDrop = startedDrops[startedDrops.length - 1] || dropSchedule[0];
+    // Vouchers that have already started
+    const pastVouchers = timeline.filter(v => v.date.getTime() <= nowTime);
     
-    // Find next drop
-    const futureDrops = dropSchedule.filter(d => d.date.getTime() > nowTime);
-    let nextDrop = futureDrops[0];
+    // We only want to show the codes from the "current" drop set? 
+    // Or just all of them? The user said "each go live voucher code should be here".
+    // I'll show all codes from the LATEST drop set that has started.
     
-    // If no future drops today, use tomorrow's first drop (default 8am for now)
-    if (!nextDrop) {
+    const latestStartTime = pastVouchers.length > 0 ? pastVouchers[pastVouchers.length - 1].date.getTime() : 0;
+    const currentCodes = pastVouchers
+      .filter(v => v.date.getTime() === latestStartTime)
+      .map(v => v.code);
+
+    // Find next upcoming voucher
+    const futureVouchers = timeline.filter(v => v.date.getTime() > nowTime);
+    let nextDate = futureVouchers[0]?.date;
+    
+    if (!nextDate) {
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate() + 1);
       tomorrow.setHours(DROP_START_HOUR, 0, 0, 0);
-      nextDrop = { date: tomorrow } as any;
+      nextDate = tomorrow;
     }
 
-    // Live if we just crossed a drop's start time (within 60s)
-    const live = dropSchedule.some(d => {
-      const diff = nowTime - d.date.getTime();
+    // Live if we just crossed ANY voucher's start time
+    const live = timeline.some(v => {
+      const diff = nowTime - v.date.getTime();
       return diff >= 0 && diff < 60000;
     });
 
     return {
-      activeVoucherCodes: currentDrop?.codes || [],
-      next: nextDrop.date,
+      activeVoucherCodes: currentCodes,
+      next: nextDate,
       isLive: live,
-      secondsToLive: Math.max(0, Math.floor((nextDrop.date.getTime() - nowTime) / 1000))
+      secondsToLive: Math.max(0, Math.floor((nextDate.getTime() - nowTime) / 1000))
     };
-  }, [dropSchedule, now]);
+  }, [timeline, now]);
 
   // Auto-pop on first mount
   useEffect(() => {

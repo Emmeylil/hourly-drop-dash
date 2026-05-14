@@ -16,7 +16,7 @@ function Admin() {
     d.setHours(0, 0, 0, 0);
     return d;
   });
-  const [codes, setCodes] = useState<Record<string, { codes: string[], startTime: string }>>({});
+  const [slots, setSlots] = useState<Record<string, { vouchers: { code: string, time: string }[] }>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
@@ -28,18 +28,26 @@ function Admin() {
     setError(null);
     try {
       const unsub = onSnapshot(collection(db, "drops"), (snapshot) => {
-        const newCodes: Record<string, { codes: string[], startTime: string }> = {};
+        const newSlots: Record<string, { vouchers: { code: string, time: string }[] }> = {};
         snapshot.forEach((doc) => {
           if (doc.id.startsWith(dateKey)) {
             const hour = doc.id.split("-").pop() || "";
             const data = doc.data();
-            newCodes[hour] = {
-              codes: Array.isArray(data.codes) ? data.codes : [data.code || ""],
-              startTime: data.startTime || `${hour.padStart(2, '0')}:00`
-            };
+            
+            let vouchers: { code: string, time: string }[] = [];
+            if (Array.isArray(data.vouchers)) {
+              vouchers = data.vouchers;
+            } else if (Array.isArray(data.codes)) {
+              // Migration path from previous array-only schema
+              vouchers = data.codes.map((c: string) => ({ code: c, time: data.startTime || `${hour.padStart(2, '0')}:00` }));
+            } else if (data.code) {
+              vouchers = [{ code: data.code, time: data.startTime || `${hour.padStart(2, '0')}:00` }];
+            }
+            
+            newSlots[hour] = { vouchers };
           }
         });
-        setCodes(newCodes);
+        setSlots(newSlots);
         setLoading(false);
       }, (err) => {
         console.error("Firestore error:", err);
@@ -54,18 +62,20 @@ function Admin() {
     }
   }, [dateKey]);
 
-  const handleSave = async (hour: number, hourCodes: string[], startTime: string) => {
+  const handleSave = async (hour: number, vouchers: { code: string, time: string }[]) => {
     const docId = `${dateKey}-${hour}`;
     setSaving(docId);
     try {
-      const filteredCodes = hourCodes.filter(c => c.trim() !== "").map(c => c.toUpperCase());
+      const filteredVouchers = vouchers
+        .filter(v => v.code.trim() !== "")
+        .map(v => ({ code: v.code.toUpperCase(), time: v.time }));
+      
       await setDoc(doc(db, "drops", docId), {
-        codes: filteredCodes,
-        startTime: startTime,
+        vouchers: filteredVouchers,
         updatedAt: new Date(),
       });
     } catch (error: any) {
-      console.error("Error saving code:", error);
+      console.error("Error saving slot:", error);
       alert("Error saving: " + error.message);
     }
     setSaving(null);
@@ -81,7 +91,7 @@ function Admin() {
 
   return (
     <main className="min-h-screen bg-[#ff9900] p-6 md:p-12 text-[#1a1a1a]">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <h1 className="text-4xl font-black tracking-tight mb-2 text-white">
@@ -134,9 +144,13 @@ function Admin() {
           )}
           
           {hours.map((hour) => {
-            const data = codes[String(hour)] || { codes: ["", "", "", "", ""], startTime: `${String(hour).padStart(2, '0')}:00` };
-            const currentCodes = data.codes;
-            const startTime = data.startTime;
+            const slotData = slots[String(hour)] || { vouchers: [] };
+            const hourLabel = hour > 12 ? `${hour - 12} PM` : hour === 12 ? "12 PM" : `${hour} AM`;
+            
+            // Ensure we always have 5 voucher inputs
+            const displayVouchers = Array.from({ length: 5 }).map((_, i) => {
+              return slotData.vouchers[i] || { code: "", time: `${String(hour).padStart(2, '0')}:00` };
+            });
             
             return (
               <div 
@@ -144,58 +158,52 @@ function Admin() {
                 className="bg-white rounded-[2rem] p-8 border border-[#4a90a4]/10 shadow-lg shadow-blue-900/5 transition-all group"
               >
                 <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center gap-4">
-                    <span className="text-sm font-black uppercase tracking-[0.4em] text-[#1a1a1a]">Slot {hour}</span>
-                    <div className="flex items-center gap-2 bg-[#f8fdff] px-3 py-1.5 rounded-xl border border-[#4a90a4]/10">
-                      <span className="text-[10px] font-bold text-[#4a90a4] uppercase">Live At:</span>
-                      <input 
-                        type="time" 
-                        className="bg-transparent border-none p-0 text-sm font-black text-[#1a1a1a] focus:ring-0 outline-none w-20"
-                        value={startTime}
-                        onChange={(e) => {
-                          setCodes(prev => ({ 
-                            ...prev, 
-                            [String(hour)]: { ...(prev[String(hour)] || data), startTime: e.target.value } 
-                          }));
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${currentCodes.some(c => c) ? 'bg-[#d48a94]/10 text-[#d48a94]' : 'bg-gray-100 text-gray-400'}`}>
-                    {currentCodes.filter(c => c).length} Codes Active
+                  <span className="text-sm font-black uppercase tracking-[0.4em] text-[#1a1a1a]">{hourLabel}</span>
+                  <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${slotData.vouchers.length > 0 ? 'bg-[#d48a94]/10 text-[#d48a94]' : 'bg-gray-100 text-gray-400'}`}>
+                    {slotData.vouchers.filter(v => v.code).length} Scheduled
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-6">
-                  {Array.from({ length: 5 }).map((_, idx) => {
-                    const code = currentCodes[idx] || "";
-                    return (
-                      <input
-                        key={idx}
-                        type="text"
-                        placeholder="Voucher code"
-                        className="w-full bg-[#f8fdff] border-2 border-[#4a90a4]/5 rounded-xl px-4 py-3 font-mono text-sm font-bold text-[#1a1a1a] focus:border-[#d48a94] outline-none transition-all"
-                        value={code}
-                        onChange={(e) => {
-                          const nextCodes = [...currentCodes];
-                          while (nextCodes.length < 5) nextCodes.push("");
-                          nextCodes[idx] = e.target.value.toUpperCase();
-                          setCodes(prev => ({ 
-                            ...prev, 
-                            [String(hour)]: { ...(prev[String(hour)] || data), codes: nextCodes } 
-                          }));
-                        }}
-                      />
-                    );
-                  })}
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+                  {displayVouchers.map((v, idx) => (
+                    <div key={idx} className="space-y-3 p-4 bg-[#f8fdff] rounded-2xl border border-[#4a90a4]/5">
+                      <div>
+                        <label className="text-[9px] font-bold uppercase text-[#4a90a4] mb-1 block">Code</label>
+                        <input
+                          type="text"
+                          placeholder="Voucher code"
+                          className="w-full bg-white border-2 border-[#4a90a4]/5 rounded-xl px-3 py-2 font-mono text-sm font-bold text-[#1a1a1a] focus:border-[#d48a94] outline-none transition-all"
+                          value={v.code}
+                          onChange={(e) => {
+                            const nextVouchers = [...displayVouchers];
+                            nextVouchers[idx] = { ...nextVouchers[idx], code: e.target.value.toUpperCase() };
+                            setSlots(prev => ({ ...prev, [String(hour)]: { vouchers: nextVouchers } }));
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[9px] font-bold uppercase text-[#4a90a4] mb-1 block">Live At</label>
+                        <input
+                          type="time"
+                          className="w-full bg-white border-2 border-[#4a90a4]/5 rounded-xl px-3 py-2 text-sm font-black text-[#1a1a1a] focus:border-[#d48a94] outline-none transition-all"
+                          value={v.time}
+                          onChange={(e) => {
+                            const nextVouchers = [...displayVouchers];
+                            nextVouchers[idx] = { ...nextVouchers[idx], time: e.target.value };
+                            setSlots(prev => ({ ...prev, [String(hour)]: { vouchers: nextVouchers } }));
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 <button
-                  onClick={() => handleSave(hour, codes[String(hour)]?.codes || currentCodes, codes[String(hour)]?.startTime || startTime)}
+                  onClick={() => handleSave(hour, slots[String(hour)]?.vouchers || displayVouchers)}
                   disabled={saving === `${dateKey}-${hour}`}
                   className="w-full py-4 rounded-xl bg-[#4a90a4] text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-[#4a90a4]/20 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 transition-all"
                 >
-                  {saving === `${dateKey}-${hour}` ? "Syncing..." : "Update Schedule & Vouchers"}
+                  {saving === `${dateKey}-${hour}` ? "Syncing..." : "Update Schedule Set"}
                 </button>
               </div>
             );
