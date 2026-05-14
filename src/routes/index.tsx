@@ -260,23 +260,30 @@ function Index() {
               --:--:--
             </div>
           ) : isLive ? (
-            <div className={`grid gap-4 ${activeVoucherCodes.length > 1 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
-              {activeVoucherCodes.map((code) => (
-                <button
-                  key={code}
-                  type="button"
-                  onClick={() => handleCopyVoucher(code)}
-                  className={`group block w-full rounded-2xl border-2 border-dashed border-primary/50 px-4 py-5 hover:border-primary transition-colors ${activeVoucherCodes.length > 1 ? 'py-4' : 'py-8'}`}
-                  aria-label={`Copy voucher code ${code}`}
-                >
-                  <div className={`font-mono font-bold tracking-[0.15em] text-card-foreground break-all ${activeVoucherCodes.length > 1 ? 'text-xl md:text-2xl' : 'text-3xl md:text-5xl'}`}>
-                    {code}
-                  </div>
-                  <div className="mt-2 text-[10px] uppercase tracking-[0.2em] text-primary font-semibold">
-                    {copiedCode === code ? "✓ Copied" : "Tap to copy"}
-                  </div>
-                </button>
-              ))}
+            <div className="space-y-6">
+              <div className="flex items-center justify-center gap-2 font-mono text-sm font-bold text-primary/70">
+                <span className="uppercase tracking-widest text-[9px]">Expires in:</span>
+                <span>{countdown.h}:{countdown.m}:{countdown.s}</span>
+              </div>
+
+              <div className={`grid gap-4 ${activeVoucherCodes.length > 1 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
+                {activeVoucherCodes.map((code) => (
+                  <button
+                    key={code}
+                    type="button"
+                    onClick={() => handleCopyVoucher(code)}
+                    className={`group block w-full rounded-2xl border-2 border-dashed border-primary/50 px-4 py-5 hover:border-primary transition-colors ${activeVoucherCodes.length > 1 ? 'py-4' : 'py-8'}`}
+                    aria-label={`Copy voucher code ${code}`}
+                  >
+                    <div className={`font-mono font-bold tracking-[0.15em] text-card-foreground break-all ${activeVoucherCodes.length > 1 ? 'text-xl md:text-2xl' : 'text-3xl md:text-5xl'}`}>
+                      {code}
+                    </div>
+                    <div className="mt-2 text-[10px] uppercase tracking-[0.2em] text-primary font-semibold">
+                      {copiedCode === code ? "✓ Copied" : "Tap to copy"}
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           ) : (
             <div className="flex items-end justify-center gap-3 md:gap-5 font-mono font-bold tabular-nums text-card-foreground">
