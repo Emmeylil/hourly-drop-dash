@@ -129,7 +129,7 @@ function Index() {
 
   // Flatten all vouchers into a single timeline
   const timeline = useMemo(() => {
-    const allVouchers: { code: string, date: Date }[] = [];
+    const allVouchers: { code: string, date: Date, isDefault?: boolean }[] = [];
     
     // 1. Generate default hourly schedule first
     for (let hour = DROP_START_HOUR; hour <= DROP_END_HOUR; hour++) {
