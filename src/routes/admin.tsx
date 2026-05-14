@@ -83,15 +83,15 @@ function Admin() {
         <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <h1 className="text-4xl font-black tracking-tight mb-2 text-[#1a1a1a]">
-              Admin <span className="text-[#ffa7b3]">Dashboard</span>
+              Admin <span className="text-[#d48a94]">Dashboard</span>
             </h1>
-            <p className="text-[#6ac1d5] font-bold uppercase tracking-widest text-xs">Voucher Management System</p>
+            <p className="text-[#4a90a4] font-bold uppercase tracking-widest text-xs">Voucher Management System</p>
           </div>
           
-          <div className="flex items-center gap-3 bg-white p-3 rounded-2xl shadow-xl shadow-blue-900/5 border border-[#6ac1d5]/20">
+          <div className="flex items-center gap-3 bg-white p-3 rounded-2xl shadow-xl shadow-blue-900/5 border border-[#4a90a4]/20">
             <button 
               onClick={() => changeDay(-1)}
-              className="p-2 hover:bg-[#6ac1d5]/10 rounded-xl transition-colors text-[#6ac1d5]"
+              className="p-2 hover:bg-[#4a90a4]/10 rounded-xl transition-colors text-[#4a90a4]"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
             </button>
@@ -108,7 +108,7 @@ function Admin() {
 
             <button 
               onClick={() => changeDay(1)}
-              className="p-2 hover:bg-[#6ac1d5]/10 rounded-xl transition-colors text-[#6ac1d5]"
+              className="p-2 hover:bg-[#4a90a4]/10 rounded-xl transition-colors text-[#4a90a4]"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
             </button>
@@ -127,7 +127,7 @@ function Admin() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative">
           {loading && (
             <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-sm flex items-center justify-center rounded-3xl">
-              <div className="w-10 h-10 border-4 border-[#ffa7b3] border-t-transparent rounded-full animate-spin" />
+              <div className="w-10 h-10 border-4 border-[#d48a94] border-t-transparent rounded-full animate-spin" />
             </div>
           )}
           
@@ -138,18 +138,18 @@ function Admin() {
             return (
               <div 
                 key={hour} 
-                className="bg-white rounded-[2rem] p-6 flex flex-col gap-4 border border-[#6ac1d5]/10 shadow-lg shadow-blue-900/5 hover:shadow-xl hover:border-[#6ac1d5]/30 transition-all group"
+                className="bg-white rounded-[2rem] p-6 flex flex-col gap-4 border border-[#4a90a4]/10 shadow-lg shadow-blue-900/5 hover:shadow-xl hover:border-[#4a90a4]/30 transition-all group"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black uppercase tracking-[0.3em] text-[#ff9900]">{hourLabel}</span>
-                  <div className={`w-2 h-2 rounded-full ${currentCode ? 'bg-[#ffa7b3] animate-pulse' : 'bg-gray-200'}`} />
+                  <div className={`w-2 h-2 rounded-full ${currentCode ? 'bg-[#d48a94] animate-pulse' : 'bg-gray-200'}`} />
                 </div>
                 
                 <div className="relative">
                   <input
                     type="text"
                     placeholder="Auto-Generated"
-                    className="w-full bg-[#f8fdff] border-2 border-[#6ac1d5]/5 rounded-2xl px-5 py-4 font-mono text-xl font-bold text-[#1a1a1a] focus:border-[#ffa7b3] focus:bg-white outline-none transition-all placeholder:text-gray-300"
+                    className="w-full bg-[#f8fdff] border-2 border-[#4a90a4]/5 rounded-2xl px-5 py-4 font-mono text-xl font-bold text-[#1a1a1a] focus:border-[#d48a94] focus:bg-white outline-none transition-all placeholder:text-gray-300"
                     value={currentCode}
                     onChange={(e) => setCodes(prev => ({ ...prev, [String(hour)]: e.target.value.toUpperCase() }))}
                   />
@@ -158,7 +158,7 @@ function Admin() {
                 <button
                   onClick={() => handleSave(hour, codes[String(hour)] || "")}
                   disabled={saving === `${dateKey}-${hour}`}
-                  className="w-full py-4 rounded-2xl bg-[#6ac1d5] text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-[#6ac1d5]/20 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all"
+                  className="w-full py-4 rounded-2xl bg-[#4a90a4] text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-[#4a90a4]/20 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all"
                 >
                   {saving === `${dateKey}-${hour}` ? "Syncing..." : "Update Slot"}
                 </button>
