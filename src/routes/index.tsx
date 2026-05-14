@@ -120,7 +120,7 @@ function Index() {
   }, []);
 
   const currentHour = now.getHours();
-  const dateKey = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+  const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const docId = `${dateKey}-${currentHour}`;
 
   // Listen for custom code from Firestore
