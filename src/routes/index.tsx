@@ -92,9 +92,21 @@ function formatCountdown(total: number) {
   };
 }
 
+function makeVoucherCode(seed: number) {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let x = seed >>> 0;
+  let out = "";
+  for (let i = 0; i < 8; i++) {
+    x = (x * 1664525 + 1013904223) >>> 0;
+    out += alphabet[x % alphabet.length];
+  }
+  return `ANNIV-${out}`;
+}
+
 function Index() {
   const [now, setNow] = useState<Date>(() => new Date());
   const [mounted, setMounted] = useState(false);
+  const [copied, setCopied] = useState(false);
   const lastLiveRef = useRef(false);
 
   useEffect(() => {
@@ -106,21 +118,52 @@ function Index() {
 
   const { next, isLive, secondsToLive } = getNextDrop(now);
 
+  // Auto-pop on first mount
+  useEffect(() => {
+    if (!mounted) return;
+    const t = setTimeout(() => {
+      popperBurst();
+      fireConfetti();
+    }, 250);
+    return () => clearTimeout(t);
+  }, [mounted]);
+
+  // Pop again when a drop goes LIVE
   useEffect(() => {
     if (!mounted) return;
     if (isLive && !lastLiveRef.current) {
       fireConfetti();
+      popperBurst();
     }
     lastLiveRef.current = isLive;
   }, [isLive, mounted]);
 
   const countdown = formatCountdown(secondsToLive);
-  const nextLabel = next.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  const nextLabel = mounted
+    ? next.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+    : "--:--";
 
   const schedule = Array.from({ length: DROP_END_HOUR - DROP_START_HOUR + 1 }, (_, i) => DROP_START_HOUR + i);
   const currentHour = now.getHours();
 
+  // Voucher code keyed to current live hour
+  const liveHourKey = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${currentHour}`;
+  const voucherCode = makeVoucherCode(
+    Array.from(liveHourKey).reduce((acc, c) => acc * 31 + c.charCodeAt(0), 7),
+  );
+
   const handlePopper = useCallback(() => popperBurst(), []);
+
+  const handleCopyVoucher = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(voucherCode);
+      setCopied(true);
+      popperBurst();
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
+  }, [voucherCode]);
 
   return (
     <main className="min-h-screen flex flex-col">
@@ -141,7 +184,7 @@ function Index() {
           🎊 Celebrating our anniversary 🎊
         </p>
         <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-card mb-6 animate-float-in">
-          {isLive ? "Drop active now" : "Next drop in"}
+          {mounted ? (isLive ? "Drop active now" : "Next drop in") : "Loading drop…"}
         </p>
 
         <h1 className="sr-only">Anniversary Hourly Voucher Drops</h1>
@@ -153,13 +196,27 @@ function Index() {
           style={{ boxShadow: "var(--shadow-card)" }}
         >
           <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.4em] text-primary mb-5">
-            {isLive ? "Tap to claim" : "Next drop @"}
+            {isLive ? "Tap to copy your code" : "Next drop @"}
           </p>
 
-          {isLive ? (
-            <div className="font-mono text-5xl md:text-7xl font-bold tracking-tight text-card-foreground">
-              LIVE NOW
+          {!mounted ? (
+            <div className="font-mono text-5xl md:text-7xl font-bold tracking-tight text-card-foreground/40">
+              --:--:--
             </div>
+          ) : isLive ? (
+            <button
+              type="button"
+              onClick={handleCopyVoucher}
+              className="group block w-full rounded-2xl border-2 border-dashed border-primary/50 px-4 py-5 hover:border-primary transition-colors"
+              aria-label={`Copy voucher code ${voucherCode}`}
+            >
+              <div className="font-mono text-3xl md:text-5xl font-bold tracking-[0.15em] text-card-foreground break-all">
+                {voucherCode}
+              </div>
+              <div className="mt-3 text-[11px] uppercase tracking-[0.3em] text-primary font-semibold">
+                {copied ? "✓ Copied to clipboard" : "Click to copy"}
+              </div>
+            </button>
           ) : (
             <div className="flex items-end justify-center gap-3 md:gap-5 font-mono font-bold tabular-nums text-card-foreground">
               <TimeBlock value={countdown.h} label="hrs" />
@@ -171,7 +228,7 @@ function Index() {
           )}
 
           <div className="mt-6 text-xs uppercase tracking-[0.25em] text-card-foreground/50">
-            Drops at {nextLabel}
+            {isLive ? "Valid until next drop" : `Drops at ${nextLabel}`}
           </div>
         </div>
 
@@ -182,7 +239,6 @@ function Index() {
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           <button
             type="button"
-            onClick={handlePopper}
             className="inline-flex items-center gap-2 rounded-full bg-card text-card-foreground px-7 py-3.5 text-sm font-semibold tracking-wide hover:scale-[1.02] active:scale-[0.98] transition-transform"
             style={{ boxShadow: "var(--shadow-card)" }}
           >
