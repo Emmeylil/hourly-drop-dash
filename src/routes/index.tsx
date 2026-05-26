@@ -249,6 +249,9 @@ function Index() {
 
   return (
     <main className="min-h-screen flex flex-col">
+      <div className="w-full flex justify-center py-4 px-6 md:px-12 bg-card/50">
+        <img src="https://ng.jumia.is/cms/0-6-anniversary/2026/Initiatives/Voucher-drop/Desktop-Double-banner-572px-x250px.gif" alt="Anniversary Ad" className="w-full max-w-4xl rounded-2xl shadow-sm object-cover" />
+      </div>
       {/* Top bar */}
       <header className="flex items-center justify-between px-6 py-6 md:px-12">
         <div className="flex items-center gap-2 font-semibold tracking-tight text-foreground">
