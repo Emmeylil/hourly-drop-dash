@@ -7,10 +7,10 @@ import { doc, onSnapshot, collection, query, where } from "firebase/firestore";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Anniversary Voucher Drops — Twice Daily, 8am & 8pm" },
-      { name: "description", content: "Celebrate our anniversary! Fresh vouchers drop on the homepage at 8am and 8pm." },
-      { property: "og:title", content: "Anniversary Voucher Drops — Twice Daily, 8am & 8pm" },
-      { property: "og:description", content: "Celebrate our anniversary! Fresh vouchers drop on the homepage at 8am and 8pm." },
+      { title: "Anniversary Voucher Drops — Weekdays, 8am & 8pm" },
+      { name: "description", content: "Celebrate our anniversary! Fresh vouchers drop on the homepage weekdays at 8am and 8pm." },
+      { property: "og:title", content: "Anniversary Voucher Drops — Weekdays, 8am & 8pm" },
+      { property: "og:description", content: "Celebrate our anniversary! Fresh vouchers drop on the homepage weekdays at 8am and 8pm." },
     ],
   }),
   component: Index,
@@ -60,6 +60,20 @@ function popperBurst() {
 
 const SCHEDULED_HOURS = [8, 20];
 
+const GAME_START_DATE = new Date(2026, 5, 1); // June 1, 2026
+
+function isDropDay(d: Date) {
+  const startDay = new Date(GAME_START_DATE);
+  startDay.setHours(0, 0, 0, 0);
+  const currentDay = new Date(d);
+  currentDay.setHours(0, 0, 0, 0);
+  if (currentDay.getTime() < startDay.getTime()) return false;
+  
+  const day = d.getDay();
+  if (day === 0 || day === 6) return false; // Sunday or Saturday
+  
+  return true;
+}
 
 function formatCountdown(total: number) {
   const h = Math.floor(total / 3600);
@@ -131,14 +145,16 @@ function Index() {
     const allVouchers: { code: string, date: Date, isDefault?: boolean }[] = [];
     
     // 1. Generate default schedule first
-    for (const hour of SCHEDULED_HOURS) {
-      const d = new Date(now);
-      d.setHours(hour, 0, 0, 0);
-      allVouchers.push({ 
-        code: makeVoucherCode(Array.from(`${dateKey}-${hour}`).reduce((acc, c) => acc * 31 + c.charCodeAt(0), 7)), 
-        date: d,
-        isDefault: true
-      });
+    if (isDropDay(now)) {
+      for (const hour of SCHEDULED_HOURS) {
+        const d = new Date(now);
+        d.setHours(hour, 0, 0, 0);
+        allVouchers.push({ 
+          code: makeVoucherCode(Array.from(`${dateKey}-${hour}`).reduce((acc, c) => acc * 31 + c.charCodeAt(0), 7)), 
+          date: d,
+          isDefault: true
+        });
+      }
     }
 
     // 2. Merge custom data
@@ -184,10 +200,24 @@ function Index() {
     let nextDate = futureVouchers[0]?.date;
     
     if (!nextDate) {
-      const tomorrow = new Date(now);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(SCHEDULED_HOURS[0], 0, 0, 0);
-      nextDate = tomorrow;
+      let nextDay = new Date(now);
+      
+      const startDay = new Date(GAME_START_DATE);
+      startDay.setHours(0, 0, 0, 0);
+      
+      if (now.getTime() < startDay.getTime()) {
+        nextDay = new Date(startDay);
+        nextDay.setHours(SCHEDULED_HOURS[0], 0, 0, 0);
+      } else {
+        nextDay.setDate(nextDay.getDate() + 1);
+        nextDay.setHours(SCHEDULED_HOURS[0], 0, 0, 0);
+      }
+
+      while (!isDropDay(nextDay)) {
+        nextDay.setDate(nextDay.getDate() + 1);
+      }
+      
+      nextDate = nextDay;
     }
 
     // Live if we are within 20 seconds of ANY voucher's start time
@@ -226,7 +256,9 @@ function Index() {
 
   const countdown = formatCountdown(secondsToLive);
   const nextLabel = mounted
-    ? next.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+    ? next.toLocaleDateString() === now.toLocaleDateString()
+      ? next.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+      : `${next.toLocaleDateString([], { month: "short", day: "numeric" })} @ ${next.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`
     : "--:--";
 
   const schedule = SCHEDULED_HOURS;
@@ -255,7 +287,7 @@ function Index() {
           Anniversary Voucher Drop
         </div>
         <div className="text-xs uppercase tracking-[0.2em] text-foreground/70">
-          🎉 Twice Daily · 8am & 8pm
+          🎉 Weekdays · 8am & 8pm
         </div>
       </header>
 
@@ -337,8 +369,8 @@ function Index() {
           </div>
           <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-12 gap-2">
             {schedule.map((hour) => {
-              const passed = currentHour > hour;
-              const live = currentHour === hour;
+              const passed = isDropDay(now) && currentHour > hour;
+              const live = isDropDay(now) && currentHour === hour;
               return (
                 <div
                   key={hour}
@@ -361,7 +393,7 @@ function Index() {
 
       {/* Footer */}
       <footer className="px-6 md:px-12 py-8 text-center text-xs text-foreground/60 border-t border-foreground/10">
-        Voucher Drop Initiative · Drops refresh twice daily, 8am and 8pm
+        Voucher Drop Initiative · Drops refresh weekdays at 8am and 8pm
       </footer>
     </main>
   );
