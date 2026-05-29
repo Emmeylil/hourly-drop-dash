@@ -7,10 +7,10 @@ import { doc, onSnapshot, collection, query, where } from "firebase/firestore";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Anniversary Voucher Drops — Hourly, 8am to 7pm" },
-      { name: "description", content: "Celebrate our anniversary! Fresh vouchers drop on the homepage every hour from 8am to 7pm." },
-      { property: "og:title", content: "Anniversary Voucher Drops — Hourly, 8am to 7pm" },
-      { property: "og:description", content: "Celebrate our anniversary! Fresh vouchers drop on the homepage every hour from 8am to 7pm." },
+      { title: "Anniversary Voucher Drops — Twice Daily, 8am & 8pm" },
+      { name: "description", content: "Celebrate our anniversary! Fresh vouchers drop on the homepage at 8am and 8pm." },
+      { property: "og:title", content: "Anniversary Voucher Drops — Twice Daily, 8am & 8pm" },
+      { property: "og:description", content: "Celebrate our anniversary! Fresh vouchers drop on the homepage at 8am and 8pm." },
     ],
   }),
   component: Index,
@@ -58,8 +58,7 @@ function popperBurst() {
   });
 }
 
-const DROP_START_HOUR = 8;
-const DROP_END_HOUR = 19; // 7pm — last drop at 19:00
+const SCHEDULED_HOURS = [8, 20];
 
 
 function formatCountdown(total: number) {
@@ -131,8 +130,8 @@ function Index() {
   const timeline = useMemo(() => {
     const allVouchers: { code: string, date: Date, isDefault?: boolean }[] = [];
     
-    // 1. Generate default hourly schedule first
-    for (let hour = DROP_START_HOUR; hour <= DROP_END_HOUR; hour++) {
+    // 1. Generate default schedule first
+    for (const hour of SCHEDULED_HOURS) {
       const d = new Date(now);
       d.setHours(hour, 0, 0, 0);
       allVouchers.push({ 
@@ -187,7 +186,7 @@ function Index() {
     if (!nextDate) {
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(DROP_START_HOUR, 0, 0, 0);
+      tomorrow.setHours(SCHEDULED_HOURS[0], 0, 0, 0);
       nextDate = tomorrow;
     }
 
@@ -230,7 +229,7 @@ function Index() {
     ? next.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
     : "--:--";
 
-  const schedule = Array.from({ length: DROP_END_HOUR - DROP_START_HOUR + 1 }, (_, i) => DROP_START_HOUR + i);
+  const schedule = SCHEDULED_HOURS;
 
   const handlePopper = useCallback(() => popperBurst(), []);
 
@@ -256,7 +255,7 @@ function Index() {
           Anniversary Voucher Drop
         </div>
         <div className="text-xs uppercase tracking-[0.2em] text-foreground/70">
-          🎉 Hourly · 8am – 7pm
+          🎉 Twice Daily · 8am & 8pm
         </div>
       </header>
 
@@ -334,7 +333,7 @@ function Index() {
             <h2 className="text-xs font-bold uppercase tracking-[0.3em] text-foreground/80">
               Today's drop schedule
             </h2>
-            <span className="text-xs text-foreground/60">{schedule.length} drops · 1 per hour</span>
+            <span className="text-xs text-foreground/60">{schedule.length} drops daily</span>
           </div>
           <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-12 gap-2">
             {schedule.map((hour) => {
@@ -362,7 +361,7 @@ function Index() {
 
       {/* Footer */}
       <footer className="px-6 md:px-12 py-8 text-center text-xs text-foreground/60 border-t border-foreground/10">
-        Voucher Drop Initiative · Drops refresh every hour, on the hour
+        Voucher Drop Initiative · Drops refresh twice daily, 8am and 8pm
       </footer>
     </main>
   );

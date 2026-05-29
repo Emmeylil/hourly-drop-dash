@@ -7,9 +7,7 @@ export const Route = createFileRoute("/admin")({
   component: Admin,
 });
 
-const DROP_START_HOUR = 8;
-const DROP_END_HOUR = 19;
-
+const SCHEDULED_HOURS = [8, 20];
 function Admin() {
   const [selectedDate, setSelectedDate] = useState<Date>(() => {
     const d = new Date();
@@ -87,7 +85,7 @@ function Admin() {
     setSelectedDate(next);
   };
 
-  const hours = Array.from({ length: DROP_END_HOUR - DROP_START_HOUR + 1 }, (_, i) => DROP_START_HOUR + i);
+  const hours = SCHEDULED_HOURS;
 
   return (
     <main className="min-h-screen bg-[#ff9900] p-6 md:p-12 text-[#1a1a1a]">
