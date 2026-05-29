@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { db } from "../lib/firebase";
+import { db, auth } from "../lib/firebase";
 import { doc, setDoc, getDoc, collection, onSnapshot } from "firebase/firestore";
+import { signInWithEmailAndPassword, onAuthStateChanged, signOut, User } from "firebase/auth";
 
 export const Route = createFileRoute("/admin")({
   component: Admin,
@@ -18,6 +19,37 @@ function Admin() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
+
+  const [user, setUser] = useState<User | null>(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => {
+      setUser(u);
+      setAuthLoading(false);
+    });
+    return () => unsub();
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError(null);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err: any) {
+      setAuthError("Invalid email or password.");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await signOut(auth);
+  };
 
   const dateKey = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`;
 
@@ -87,6 +119,38 @@ function Admin() {
 
   const hours = SCHEDULED_HOURS;
 
+  if (authLoading) {
+    return (
+      <main className="min-h-screen bg-[#ff9900] flex items-center justify-center p-6 text-[#1a1a1a]">
+        <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin" />
+      </main>
+    );
+  }
+
+  if (!user) {
+    return (
+      <main className="min-h-screen bg-[#ff9900] flex items-center justify-center p-6 text-[#1a1a1a]">
+        <form onSubmit={handleLogin} className="bg-white rounded-[2rem] p-8 w-full max-w-md shadow-2xl">
+          <h1 className="text-3xl font-black mb-6">Admin Login</h1>
+          {authError && <div className="mb-4 text-red-500 text-sm font-bold">{authError}</div>}
+          <div className="space-y-4 mb-6">
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4a90a4] mb-2">Email</label>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-[#f8fdff] border-2 border-[#4a90a4]/10 rounded-xl px-4 py-3 font-bold text-sm outline-none focus:border-[#4a90a4]/50" required />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4a90a4] mb-2">Password</label>
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-[#f8fdff] border-2 border-[#4a90a4]/10 rounded-xl px-4 py-3 font-bold text-sm outline-none focus:border-[#4a90a4]/50" required />
+            </div>
+          </div>
+          <button type="submit" disabled={authLoading} className="w-full py-4 rounded-xl bg-[#4a90a4] text-white font-black uppercase tracking-widest text-xs disabled:opacity-50 hover:scale-[1.02] active:scale-[0.98] transition-all">
+            {authLoading ? "Logging in..." : "Login"}
+          </button>
+        </form>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-[#ff9900] p-6 md:p-12 text-[#1a1a1a]">
       <div className="max-w-6xl mx-auto">
@@ -98,7 +162,14 @@ function Admin() {
             <p className="text-white/80 font-bold uppercase tracking-widest text-xs">Voucher Management System</p>
           </div>
           
-          <div className="flex items-center gap-3 bg-white p-3 rounded-2xl shadow-xl shadow-blue-900/5 border border-[#4a90a4]/20">
+          <div className="flex flex-col sm:flex-row items-end sm:items-center gap-4">
+            <button 
+              onClick={handleLogout}
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-colors font-bold uppercase tracking-widest text-[10px]"
+            >
+              Logout
+            </button>
+            <div className="flex items-center gap-3 bg-white p-3 rounded-2xl shadow-xl shadow-blue-900/5 border border-[#4a90a4]/20">
             <button 
               onClick={() => changeDay(-1)}
               className="p-2 hover:bg-[#4a90a4]/10 rounded-xl transition-colors text-[#4a90a4]"
