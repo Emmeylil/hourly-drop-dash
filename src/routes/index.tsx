@@ -215,8 +215,16 @@ function Index() {
     return allVouchers.sort((a, b) => a.date.getTime() - b.date.getTime());
   }, [scheduleData, now, dateKey]);
 
-  const { activeVouchers, next, isLive, secondsToLive } = useMemo(() => {
+  const { activeVouchers, next, isLive, isOverridePeriod, secondsToLive } = useMemo(() => {
     const nowTime = now.getTime();
+
+    // Temporary override to repush 8am voucher for 30 minutes from 10:45 AM to 11:16 AM on June 1, 2026
+    const isOverride =
+      now.getFullYear() === 2026 &&
+      now.getMonth() === 5 && // June (0-indexed)
+      now.getDate() === 1 &&
+      nowTime >= new Date(2026, 5, 1, 10, 45, 0).getTime() &&
+      nowTime <= new Date(2026, 5, 1, 11, 16, 0).getTime();
 
     // Vouchers that have already started
     const pastVouchers = timeline.filter((v) => v.date.getTime() <= nowTime);
@@ -254,13 +262,14 @@ function Index() {
       nextDate = nextDay;
     }
 
-    // Live if we are within 1 hour of the latest drop start time
-    const live = latestStartTime > 0 && nowTime - latestStartTime < 3600000;
+    // Live if we are within 1 hour of the latest drop start time, or if the override is active
+    const live = isOverride || (latestStartTime > 0 && nowTime - latestStartTime < 3600000);
 
     return {
       activeVouchers,
       next: nextDate,
       isLive: live,
+      isOverridePeriod: isOverride,
       secondsToLive: Math.max(0, Math.floor((nextDate.getTime() - nowTime) / 1000)),
     };
   }, [timeline, now]);
@@ -379,7 +388,11 @@ function Index() {
           )}
 
           <div className="mt-6 text-xs uppercase tracking-[0.25em] text-card-foreground/50">
-            {isLive ? "Valid for 1 hour" : `Drops at ${nextLabel}`}
+            {isLive
+              ? isOverridePeriod
+                ? "Special extended drop"
+                : "Valid for 1 hour"
+              : `Drops at ${nextLabel}`}
           </div>
         </div>
 
