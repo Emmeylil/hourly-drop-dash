@@ -8,9 +8,17 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Anniversary Voucher Drops — Weekdays, 8am & 8pm" },
-      { name: "description", content: "Celebrate our anniversary! Fresh vouchers drop on the homepage weekdays at 8am and 8pm." },
+      {
+        name: "description",
+        content:
+          "Celebrate our anniversary! Fresh vouchers drop on the homepage weekdays at 8am and 8pm.",
+      },
       { property: "og:title", content: "Anniversary Voucher Drops — Weekdays, 8am & 8pm" },
-      { property: "og:description", content: "Celebrate our anniversary! Fresh vouchers drop on the homepage weekdays at 8am and 8pm." },
+      {
+        property: "og:description",
+        content:
+          "Celebrate our anniversary! Fresh vouchers drop on the homepage weekdays at 8am and 8pm.",
+      },
     ],
   }),
   component: Index,
@@ -68,10 +76,10 @@ function isDropDay(d: Date) {
   const currentDay = new Date(d);
   currentDay.setHours(0, 0, 0, 0);
   if (currentDay.getTime() < startDay.getTime()) return false;
-  
+
   const day = d.getDay();
   if (day === 0 || day === 6) return false; // Sunday or Saturday
-  
+
   return true;
 }
 
@@ -113,18 +121,22 @@ function Index() {
   const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const docId = `${dateKey}-${currentHour}`;
 
-  const [scheduleData, setScheduleData] = useState<Record<string, { vouchers: { code: string, time: string }[] }>>({});
+  const [scheduleData, setScheduleData] = useState<
+    Record<string, { vouchers: { code: string; time: string }[] }>
+  >({});
 
   // Listen for all drops for today
   useEffect(() => {
-    fetch("https://docs.google.com/spreadsheets/d/1aY4z4I0denfZyq-wQZA15EZnaARs7FJ5UDEEvIlq_Fg/export?format=csv")
-      .then(res => res.text())
-      .then(text => {
-        const rows = text.split('\n').slice(1);
-        const data: Record<string, { vouchers: { code: string, time: string }[] }> = {};
-        rows.forEach(row => {
+    fetch(
+      "https://docs.google.com/spreadsheets/d/1aY4z4I0denfZyq-wQZA15EZnaARs7FJ5UDEEvIlq_Fg/export?format=csv",
+    )
+      .then((res) => res.text())
+      .then((text) => {
+        const rows = text.split("\n").slice(1);
+        const data: Record<string, { vouchers: { code: string; time: string }[] }> = {};
+        rows.forEach((row) => {
           if (!row.trim()) return;
-          const cols = row.split(',');
+          const cols = row.split(",");
           if (cols.length < 3) return;
           const code = cols[0].trim();
           const dateStr = cols[1].trim();
@@ -136,23 +148,23 @@ function Index() {
           if (isNaN(rowDate.getTime())) return;
 
           const rowDateKey = `${rowDate.getFullYear()}-${String(rowDate.getMonth() + 1).padStart(2, "0")}-${String(rowDate.getDate()).padStart(2, "0")}`;
-          
+
           if (rowDateKey === dateKey) {
-            let timeParts = timeStr.split(' ');
-            let time = timeParts[0];
-            let modifier = timeParts[1];
-            
-            let [h, m] = time.split(':');
+            const timeParts = timeStr.split(" ");
+            const time = timeParts[0];
+            const modifier = timeParts[1];
+
+            const [h, m] = time.split(":");
             let hourInt = parseInt(h, 10);
-            
+
             if (modifier) {
-               if (modifier.toUpperCase() === 'PM' && hourInt < 12) hourInt += 12;
-               if (modifier.toUpperCase() === 'AM' && hourInt === 12) hourInt = 0;
+              if (modifier.toUpperCase() === "PM" && hourInt < 12) hourInt += 12;
+              if (modifier.toUpperCase() === "AM" && hourInt === 12) hourInt = 0;
             }
-            
+
             const hour = String(hourInt);
-            const formattedTime = `${String(hourInt).padStart(2, '0')}:${m || '00'}`;
-            
+            const formattedTime = `${String(hourInt).padStart(2, "0")}:${m || "00"}`;
+
             if (!data[hour]) data[hour] = { vouchers: [] };
             data[hour].vouchers.push({ code, time: formattedTime });
           }
@@ -164,17 +176,19 @@ function Index() {
 
   // Flatten all vouchers into a single timeline
   const timeline = useMemo(() => {
-    const allVouchers: { code: string, date: Date, isDefault?: boolean }[] = [];
-    
+    const allVouchers: { code: string; date: Date; isDefault?: boolean }[] = [];
+
     // 1. Generate default schedule first
     if (isDropDay(now)) {
       for (const hour of SCHEDULED_HOURS) {
         const d = new Date(now);
         d.setHours(hour, 0, 0, 0);
-        allVouchers.push({ 
-          code: makeVoucherCode(Array.from(`${dateKey}-${hour}`).reduce((acc, c) => acc * 31 + c.charCodeAt(0), 7)), 
+        allVouchers.push({
+          code: makeVoucherCode(
+            Array.from(`${dateKey}-${hour}`).reduce((acc, c) => acc * 31 + c.charCodeAt(0), 7),
+          ),
           date: d,
-          isDefault: true
+          isDefault: true,
         });
       }
     }
@@ -184,12 +198,12 @@ function Index() {
       if (slot.vouchers && slot.vouchers.length > 0) {
         // Remove default vouchers for this specific slot hour if custom ones exist
         const hInt = parseInt(slotHour);
-        const filtered = allVouchers.filter(v => v.date.getHours() !== hInt || !v.isDefault);
+        const filtered = allVouchers.filter((v) => v.date.getHours() !== hInt || !v.isDefault);
         allVouchers.length = 0;
         allVouchers.push(...filtered);
 
         // Add the custom vouchers
-        slot.vouchers.forEach(v => {
+        slot.vouchers.forEach((v) => {
           const [h, m] = v.time.split(":").map(Number);
           const d = new Date(now);
           d.setHours(h, m, 0, 0);
@@ -203,30 +217,38 @@ function Index() {
 
   const { activeVoucherCode, next, isLive, secondsToLive } = useMemo(() => {
     const nowTime = now.getTime();
-    
+
     // Vouchers that have already started
-    const pastVouchers = timeline.filter(v => v.date.getTime() <= nowTime);
-    
+    const pastVouchers = timeline.filter((v) => v.date.getTime() <= nowTime);
+
     // Find the LATEST drop event
-    const latestStartTime = pastVouchers.length > 0 ? pastVouchers[pastVouchers.length - 1].date.getTime() : 0;
-    const currentSet = pastVouchers.filter(v => v.date.getTime() === latestStartTime);
-    
-    // Pick ONE random code from the current set (using a stable seed based on startTime and browser/device if possible, 
+    const latestStartTime =
+      pastVouchers.length > 0 ? pastVouchers[pastVouchers.length - 1].date.getTime() : 0;
+    const currentSet = pastVouchers.filter((v) => v.date.getTime() === latestStartTime);
+
+    // Pick ONE random code from the current set (using a stable seed based on startTime and browser/device if possible,
     // but for now just random is fine as requested)
-    const randomCode = currentSet.length > 0 
-      ? currentSet[Math.floor((latestStartTime % 1000 + (typeof window !== 'undefined' ? window.navigator.userAgent.length : 0)) % currentSet.length)].code 
-      : "";
+    const randomCode =
+      currentSet.length > 0
+        ? currentSet[
+            Math.floor(
+              ((latestStartTime % 1000) +
+                (typeof window !== "undefined" ? window.navigator.userAgent.length : 0)) %
+                currentSet.length,
+            )
+          ].code
+        : "";
 
     // Find next upcoming voucher
-    const futureVouchers = timeline.filter(v => v.date.getTime() > nowTime);
+    const futureVouchers = timeline.filter((v) => v.date.getTime() > nowTime);
     let nextDate = futureVouchers[0]?.date;
-    
+
     if (!nextDate) {
       let nextDay = new Date(now);
-      
+
       const startDay = new Date(GAME_START_DATE);
       startDay.setHours(0, 0, 0, 0);
-      
+
       if (now.getTime() < startDay.getTime()) {
         nextDay = new Date(startDay);
         nextDay.setHours(SCHEDULED_HOURS[0], 0, 0, 0);
@@ -238,12 +260,12 @@ function Index() {
       while (!isDropDay(nextDay)) {
         nextDay.setDate(nextDay.getDate() + 1);
       }
-      
+
       nextDate = nextDay;
     }
 
     // Live if we are within 20 seconds of ANY voucher's start time
-    const live = timeline.some(v => {
+    const live = timeline.some((v) => {
       const diff = nowTime - v.date.getTime();
       return diff >= 0 && diff < 20000; // 20 seconds window
     });
@@ -252,7 +274,7 @@ function Index() {
       activeVoucherCode: randomCode,
       next: nextDate,
       isLive: live,
-      secondsToLive: Math.max(0, Math.floor((nextDate.getTime() - nowTime) / 1000))
+      secondsToLive: Math.max(0, Math.floor((nextDate.getTime() - nowTime) / 1000)),
     };
   }, [timeline, now]);
 
@@ -303,7 +325,7 @@ function Index() {
   return (
     <main className="min-h-screen flex flex-col">
       {/* Top bar */}
-      <header className="flex items-center justify-between px-6 py-6 md:px-12">
+      <header className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-6 md:px-12 text-center sm:text-left">
         <div className="flex items-center gap-2 font-semibold tracking-tight text-foreground">
           <span className="inline-block w-2.5 h-2.5 rounded-full bg-card animate-pulse-dot" />
           Anniversary Voucher Drop
@@ -327,7 +349,7 @@ function Index() {
         {/* Card */}
         <div
           key={next.getTime()}
-          className="animate-drop-in relative w-full max-w-xl rounded-[2rem] bg-card text-card-foreground px-8 py-10 md:px-14 md:py-12"
+          className="animate-drop-in relative w-full max-w-xl rounded-2xl sm:rounded-[2rem] bg-card text-card-foreground px-5 py-8 sm:px-10 sm:py-10 md:px-14 md:py-12"
           style={{ boxShadow: "var(--shadow-card)" }}
         >
           <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.4em] text-primary mb-5">
@@ -335,17 +357,17 @@ function Index() {
           </p>
 
           {!mounted ? (
-            <div className="font-mono text-5xl md:text-7xl font-bold tracking-tight text-card-foreground/40">
+            <div className="font-mono text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight text-card-foreground/40">
               --:--:--
             </div>
           ) : isLive ? (
             <button
               type="button"
               onClick={() => handleCopyVoucher(activeVoucherCode)}
-              className="group block w-full rounded-2xl border-2 border-dashed border-primary/50 px-4 py-8 hover:border-primary transition-colors"
+              className="group block w-full rounded-2xl border-2 border-dashed border-primary/50 px-3 py-6 sm:px-4 sm:py-8 hover:border-primary transition-colors"
               aria-label={`Copy voucher code ${activeVoucherCode}`}
             >
-              <div className="font-mono text-3xl md:text-5xl font-bold tracking-[0.15em] text-card-foreground break-all uppercase">
+              <div className="font-mono text-xl sm:text-3xl md:text-5xl font-bold tracking-[0.15em] text-card-foreground break-all uppercase">
                 {activeVoucherCode}
               </div>
               <div className="mt-3 text-[11px] uppercase tracking-[0.3em] text-primary font-semibold">
@@ -353,11 +375,11 @@ function Index() {
               </div>
             </button>
           ) : (
-            <div className="flex items-end justify-center gap-3 md:gap-5 font-mono font-bold tabular-nums text-card-foreground">
+            <div className="flex items-end justify-center gap-2 sm:gap-4 md:gap-5 font-mono font-bold tabular-nums text-card-foreground">
               <TimeBlock value={countdown.h} label="hrs" />
-              <span className="text-4xl md:text-6xl pb-2 opacity-40">:</span>
+              <span className="text-3xl sm:text-4xl md:text-6xl pb-1 sm:pb-2 opacity-40">:</span>
               <TimeBlock value={countdown.m} label="min" />
-              <span className="text-4xl md:text-6xl pb-2 opacity-40">:</span>
+              <span className="text-3xl sm:text-4xl md:text-6xl pb-1 sm:pb-2 opacity-40">:</span>
               <TimeBlock value={countdown.s} label="sec" />
             </div>
           )}
@@ -366,8 +388,6 @@ function Index() {
             {isLive ? "Valid until next drop" : `Drops at ${nextLabel}`}
           </div>
         </div>
-
-
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           <button
@@ -383,20 +403,20 @@ function Index() {
       {/* Schedule */}
       <section className="px-6 md:px-12 pb-12">
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-6">
             <h2 className="text-xs font-bold uppercase tracking-[0.3em] text-foreground/80">
               Today's drop schedule
             </h2>
             <span className="text-xs text-foreground/60">{schedule.length} drops daily</span>
           </div>
-          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-12 gap-2">
+          <div className="flex flex-wrap justify-center gap-2 md:gap-3">
             {schedule.map((hour) => {
               const passed = isDropDay(now) && currentHour > hour;
               const live = isDropDay(now) && currentHour === hour;
               return (
                 <div
                   key={hour}
-                  className={`rounded-xl px-2 py-3 text-center text-xs font-mono font-semibold transition-all ${
+                  className={`rounded-xl px-4 py-3 text-center text-xs font-mono font-semibold transition-all min-w-[85px] sm:min-w-[100px] ${
                     live
                       ? "bg-card text-card-foreground scale-105"
                       : passed
@@ -424,8 +444,8 @@ function Index() {
 function TimeBlock({ value, label }: { value: string; label: string }) {
   return (
     <div className="flex flex-col items-center">
-      <span className="text-5xl md:text-7xl leading-none">{value}</span>
-      <span className="mt-2 text-[10px] uppercase tracking-[0.3em] text-card-foreground/50 font-sans">
+      <span className="text-4xl sm:text-5xl md:text-7xl leading-none">{value}</span>
+      <span className="mt-2 text-[8px] sm:text-[10px] uppercase tracking-[0.3em] text-card-foreground/50 font-sans">
         {label}
       </span>
     </div>

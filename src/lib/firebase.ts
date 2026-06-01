@@ -10,7 +10,7 @@ const firebaseConfig = {
   storageBucket: "voucher-drop.firebasestorage.app",
   messagingSenderId: "81485864306",
   appId: "1:81485864306:web:35c3b3d3262d61bf1651eb",
-  measurementId: "G-FP1BPBJ2YK"
+  measurementId: "G-FP1BPBJ2YK",
 };
 
 const app = initializeApp(firebaseConfig);
