@@ -215,7 +215,7 @@ function Index() {
     return allVouchers.sort((a, b) => a.date.getTime() - b.date.getTime());
   }, [scheduleData, now, dateKey]);
 
-  const { activeVoucherCode, next, isLive, secondsToLive } = useMemo(() => {
+  const { activeVouchers, next, isLive, secondsToLive } = useMemo(() => {
     const nowTime = now.getTime();
 
     // Vouchers that have already started
@@ -226,18 +226,8 @@ function Index() {
       pastVouchers.length > 0 ? pastVouchers[pastVouchers.length - 1].date.getTime() : 0;
     const currentSet = pastVouchers.filter((v) => v.date.getTime() === latestStartTime);
 
-    // Pick ONE random code from the current set (using a stable seed based on startTime and browser/device if possible,
-    // but for now just random is fine as requested)
-    const randomCode =
-      currentSet.length > 0
-        ? currentSet[
-            Math.floor(
-              ((latestStartTime % 1000) +
-                (typeof window !== "undefined" ? window.navigator.userAgent.length : 0)) %
-                currentSet.length,
-            )
-          ].code
-        : "";
+    // Extract all voucher codes from the current set and deduplicate them
+    const activeVouchers = Array.from(new Set(currentSet.map((v) => v.code)));
 
     // Find next upcoming voucher
     const futureVouchers = timeline.filter((v) => v.date.getTime() > nowTime);
@@ -264,14 +254,11 @@ function Index() {
       nextDate = nextDay;
     }
 
-    // Live if we are within 20 seconds of ANY voucher's start time
-    const live = timeline.some((v) => {
-      const diff = nowTime - v.date.getTime();
-      return diff >= 0 && diff < 20000; // 20 seconds window
-    });
+    // Live if we are within 1 hour of the latest drop start time
+    const live = latestStartTime > 0 && nowTime - latestStartTime < 3600000;
 
     return {
-      activeVoucherCode: randomCode,
+      activeVouchers,
       next: nextDate,
       isLive: live,
       secondsToLive: Math.max(0, Math.floor((nextDate.getTime() - nowTime) / 1000)),
@@ -361,19 +348,26 @@ function Index() {
               --:--:--
             </div>
           ) : isLive ? (
-            <button
-              type="button"
-              onClick={() => handleCopyVoucher(activeVoucherCode)}
-              className="group block w-full rounded-2xl border-2 border-dashed border-primary/50 px-3 py-6 sm:px-4 sm:py-8 hover:border-primary transition-colors"
-              aria-label={`Copy voucher code ${activeVoucherCode}`}
+            <div
+              className={`grid gap-4 ${activeVouchers.length > 1 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"}`}
             >
-              <div className="font-mono text-xl sm:text-3xl md:text-5xl font-bold tracking-[0.15em] text-card-foreground break-all uppercase">
-                {activeVoucherCode}
-              </div>
-              <div className="mt-3 text-[11px] uppercase tracking-[0.3em] text-primary font-semibold">
-                {copiedCode === activeVoucherCode ? "✓ Copied to clipboard" : "Tap to copy"}
-              </div>
-            </button>
+              {activeVouchers.map((code) => (
+                <button
+                  key={code}
+                  type="button"
+                  onClick={() => handleCopyVoucher(code)}
+                  className="group block w-full rounded-2xl border-2 border-dashed border-primary/50 px-3 py-4 sm:px-4 sm:py-6 hover:border-primary transition-colors"
+                  aria-label={`Copy voucher code ${code}`}
+                >
+                  <div className="font-mono text-lg sm:text-xl md:text-2xl font-bold tracking-[0.1em] text-card-foreground break-all uppercase">
+                    {code}
+                  </div>
+                  <div className="mt-2 text-[10px] uppercase tracking-[0.25em] text-primary font-semibold">
+                    {copiedCode === code ? "✓ Copied to clipboard" : "Tap to copy"}
+                  </div>
+                </button>
+              ))}
+            </div>
           ) : (
             <div className="flex items-end justify-center gap-2 sm:gap-4 md:gap-5 font-mono font-bold tabular-nums text-card-foreground">
               <TimeBlock value={countdown.h} label="hrs" />
@@ -385,7 +379,7 @@ function Index() {
           )}
 
           <div className="mt-6 text-xs uppercase tracking-[0.25em] text-card-foreground/50">
-            {isLive ? "Valid until next drop" : `Drops at ${nextLabel}`}
+            {isLive ? "Valid for 1 hour" : `Drops at ${nextLabel}`}
           </div>
         </div>
 
