@@ -117,27 +117,49 @@ function Index() {
 
   // Listen for all drops for today
   useEffect(() => {
-    const q = query(collection(db, "drops"), where("__name__", ">=", dateKey), where("__name__", "<=", `${dateKey}-\uf8ff`));
-    const unsub = onSnapshot(q, (snapshot) => {
-      const data: Record<string, { vouchers: { code: string, time: string }[] }> = {};
-      snapshot.forEach((doc) => {
-        const hour = doc.id.split("-").pop() || "";
-        const d = doc.data();
-        
-        let vouchers: { code: string, time: string }[] = [];
-        if (Array.isArray(d.vouchers)) {
-          vouchers = d.vouchers;
-        } else if (Array.isArray(d.codes)) {
-          vouchers = d.codes.map((c: string) => ({ code: c, time: d.startTime || `${hour.padStart(2, '0')}:00` }));
-        } else if (d.code) {
-          vouchers = [{ code: d.code, time: d.startTime || `${hour.padStart(2, '0')}:00` }];
-        }
-        
-        data[hour] = { vouchers };
-      });
-      setScheduleData(data);
-    });
-    return () => unsub();
+    fetch("https://docs.google.com/spreadsheets/d/1aY4z4I0denfZyq-wQZA15EZnaARs7FJ5UDEEvIlq_Fg/export?format=csv")
+      .then(res => res.text())
+      .then(text => {
+        const rows = text.split('\n').slice(1);
+        const data: Record<string, { vouchers: { code: string, time: string }[] }> = {};
+        rows.forEach(row => {
+          if (!row.trim()) return;
+          const cols = row.split(',');
+          if (cols.length < 3) return;
+          const code = cols[0].trim();
+          const dateStr = cols[1].trim();
+          const timeStr = cols[2].trim();
+
+          if (!code || !dateStr || !timeStr) return;
+
+          const rowDate = new Date(dateStr);
+          if (isNaN(rowDate.getTime())) return;
+
+          const rowDateKey = `${rowDate.getFullYear()}-${String(rowDate.getMonth() + 1).padStart(2, "0")}-${String(rowDate.getDate()).padStart(2, "0")}`;
+          
+          if (rowDateKey === dateKey) {
+            let timeParts = timeStr.split(' ');
+            let time = timeParts[0];
+            let modifier = timeParts[1];
+            
+            let [h, m] = time.split(':');
+            let hourInt = parseInt(h, 10);
+            
+            if (modifier) {
+               if (modifier.toUpperCase() === 'PM' && hourInt < 12) hourInt += 12;
+               if (modifier.toUpperCase() === 'AM' && hourInt === 12) hourInt = 0;
+            }
+            
+            const hour = String(hourInt);
+            const formattedTime = `${String(hourInt).padStart(2, '0')}:${m || '00'}`;
+            
+            if (!data[hour]) data[hour] = { vouchers: [] };
+            data[hour].vouchers.push({ code, time: formattedTime });
+          }
+        });
+        setScheduleData(data);
+      })
+      .catch(console.error);
   }, [dateKey]);
 
   // Flatten all vouchers into a single timeline
