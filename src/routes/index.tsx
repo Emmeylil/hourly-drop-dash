@@ -319,10 +319,10 @@ function Index() {
   }, []);
 
   return (
-    <main className="min-h-screen flex flex-col">
+    <main className="w-full max-w-full overflow-x-hidden min-h-screen flex flex-col">
       {/* Banner */}
       <div className="w-full max-w-5xl mx-auto px-4 pt-4">
-        <picture className="w-full block rounded-xl overflow-hidden shadow-md">
+        <picture className="w-full max-w-full block rounded-xl overflow-hidden shadow-md">
           <source
             media="(max-width: 768px)"
             srcSet="https://ng.jumia.is/cms/0-6-anniversary/2026/Initiatives/Voucher-drop/730x292.gif"
@@ -330,7 +330,7 @@ function Index() {
           <img
             src="https://ng.jumia.is/cms/0-6-anniversary/2026/Initiatives/Voucher-drop/1152x252.gif"
             alt="Anniversary Voucher Drop Banner"
-            className="w-full h-auto object-cover block"
+            className="w-full max-w-full h-auto object-cover block"
           />
         </picture>
       </div>
@@ -422,17 +422,11 @@ function Index() {
         </div>
 
         {/* Video Embed */}
-        <div className="mt-8 w-full max-w-xl px-4">
+        <div className="mt-8 w-full max-w-xl px-4 mx-auto">
           <iframe
+            className="w-full aspect-video md:w-[103%] md:translate-x-[-1.5%] bg-white p-2 rounded border-none max-h-[315px]"
             style={{
               backgroundColor: "white",
-              width: "103%",
-              height: "56.25vw",
-              maxHeight: "315px",
-              border: "none",
-              padding: "8px",
-              borderRadius: "4px",
-              transform: "translateX(-1.5%)",
             }}
             src="https://www.youtube.com/embed/Kuszj-QsdS8?si=61QoQdYAuM_ZITnl"
             title="YouTube video player"
