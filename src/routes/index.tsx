@@ -320,21 +320,6 @@ function Index() {
 
   return (
     <main className="w-full max-w-full overflow-x-hidden min-h-screen flex flex-col">
-      {/* Banner */}
-      <div className="w-full max-w-full sm:max-w-5xl mx-auto px-4 pt-4">
-        <picture className="block w-full max-w-full h-auto rounded-xl overflow-hidden shadow-md">
-          <source
-            media="(max-width: 768px)"
-            srcSet="https://ng.jumia.is/cms/0-6-anniversary/2026/Initiatives/Voucher-drop/730x292.gif"
-          />
-          <img
-            src="https://ng.jumia.is/cms/0-6-anniversary/2026/Initiatives/Voucher-drop/1152x252.gif"
-            alt="Anniversary Voucher Drop Banner"
-            className="block w-full max-w-full h-auto"
-          />
-        </picture>
-      </div>
-
       {/* Top bar */}
       <header className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-6 md:px-12 text-center sm:text-left">
         <div className="flex items-center gap-2 font-semibold tracking-tight text-foreground">
@@ -419,20 +404,6 @@ function Index() {
           >
             🎉 Pop the popper
           </button>
-        </div>
-
-        {/* Video Embed */}
-        <div className="mt-8 w-full max-w-xl px-4 mx-auto">
-          <iframe
-            className="w-full max-w-full aspect-video md:w-[103%] md:translate-x-[-1.5%] bg-white p-2 rounded border-none max-h-[315px]"
-            style={{
-              backgroundColor: "white",
-            }}
-            src="https://www.youtube.com/embed/Kuszj-QsdS8?si=61QoQdYAuM_ZITnl"
-            title="YouTube video player"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-          />
         </div>
       </section>
 
