@@ -321,8 +321,8 @@ function Index() {
   return (
     <main className="w-full max-w-full overflow-x-hidden min-h-screen flex flex-col">
       {/* Banner */}
-      <div className="w-full max-w-5xl mx-auto px-4 pt-4">
-        <picture className="w-full max-w-full block rounded-xl overflow-hidden shadow-md">
+      <div className="w-full max-w-full sm:max-w-5xl mx-auto px-4 pt-4">
+        <picture className="block w-full max-w-full h-auto rounded-xl overflow-hidden shadow-md">
           <source
             media="(max-width: 768px)"
             srcSet="https://ng.jumia.is/cms/0-6-anniversary/2026/Initiatives/Voucher-drop/730x292.gif"
@@ -330,7 +330,7 @@ function Index() {
           <img
             src="https://ng.jumia.is/cms/0-6-anniversary/2026/Initiatives/Voucher-drop/1152x252.gif"
             alt="Anniversary Voucher Drop Banner"
-            className="w-full max-w-full h-auto object-cover block"
+            className="block w-full max-w-full h-auto"
           />
         </picture>
       </div>
@@ -424,7 +424,7 @@ function Index() {
         {/* Video Embed */}
         <div className="mt-8 w-full max-w-xl px-4 mx-auto">
           <iframe
-            className="w-full aspect-video md:w-[103%] md:translate-x-[-1.5%] bg-white p-2 rounded border-none max-h-[315px]"
+            className="w-full max-w-full aspect-video md:w-[103%] md:translate-x-[-1.5%] bg-white p-2 rounded border-none max-h-[315px]"
             style={{
               backgroundColor: "white",
             }}
