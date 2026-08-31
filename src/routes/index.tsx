@@ -94,7 +94,6 @@ function formatCountdown(total: number) {
   };
 }
 
-<<<<<<< HEAD
 function makeVoucherCode(seed: number) {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let x = seed >>> 0;
@@ -105,9 +104,6 @@ function makeVoucherCode(seed: number) {
   }
   return `BRAND-${out}`;
 }
-
-=======
->>>>>>> 30dbb9738176ad2667fb5c6c010ef26666dc97a2
 function Index() {
   const [now, setNow] = useState<Date>(() => new Date());
   const [mounted, setMounted] = useState(false);
@@ -301,7 +297,6 @@ function Index() {
   }, []);
 
   return (
-<<<<<<< HEAD
     <main className="w-full max-w-full overflow-x-hidden min-h-screen flex flex-col relative bg-background text-foreground">
       {/* Background Aurora Orbs */}
       <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] overflow-hidden -z-10 opacity-60">
@@ -309,10 +304,6 @@ function Index() {
         <div className="absolute -top-20 right-1/4 w-[500px] h-[500px] rounded-full bg-[#8B5CF6]/25 blur-[140px] animate-pulse" />
         <div className="absolute top-40 left-1/3 w-[350px] h-[350px] rounded-full bg-[#F5A623]/20 blur-[100px]" />
       </div>
-
-=======
-    <main className="w-full max-w-full overflow-x-hidden min-h-screen flex flex-col">
->>>>>>> 30dbb9738176ad2667fb5c6c010ef26666dc97a2
       {/* Top bar */}
       <header className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-6 md:px-12 text-center sm:text-left">
         <div className="flex items-center gap-2.5 font-bold tracking-tight text-foreground">
@@ -406,8 +397,6 @@ function Index() {
             🎉 Pop the popper
           </button>
         </div>
-<<<<<<< HEAD
-
         {/* Video Embed */}
         <div className="mt-8 w-full max-w-xl px-4 mx-auto">
           <div className="p-1 rounded-2xl bg-gradient-to-r from-[#F68B1E]/30 via-[#F5A623]/20 to-[#8B5CF6]/30 shadow-xl">
@@ -423,8 +412,6 @@ function Index() {
             />
           </div>
         </div>
-=======
->>>>>>> 30dbb9738176ad2667fb5c6c010ef26666dc97a2
       </section>
 
       {/* Schedule */}
