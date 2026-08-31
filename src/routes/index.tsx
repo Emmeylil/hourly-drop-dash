@@ -94,6 +94,7 @@ function formatCountdown(total: number) {
   };
 }
 
+<<<<<<< HEAD
 function makeVoucherCode(seed: number) {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let x = seed >>> 0;
@@ -105,6 +106,8 @@ function makeVoucherCode(seed: number) {
   return `BRAND-${out}`;
 }
 
+=======
+>>>>>>> 30dbb9738176ad2667fb5c6c010ef26666dc97a2
 function Index() {
   const [now, setNow] = useState<Date>(() => new Date());
   const [mounted, setMounted] = useState(false);
@@ -176,44 +179,23 @@ function Index() {
 
   // Flatten all vouchers into a single timeline
   const timeline = useMemo(() => {
-    const allVouchers: { code: string; date: Date; isDefault?: boolean }[] = [];
+    const allVouchers: { code: string; date: Date }[] = [];
 
-    // 1. Generate default schedule first
-    if (isDropDay(now)) {
-      for (const hour of SCHEDULED_HOURS) {
-        const d = new Date(now);
-        d.setHours(hour, 0, 0, 0);
-        allVouchers.push({
-          code: makeVoucherCode(
-            Array.from(`${dateKey}-${hour}`).reduce((acc, c) => acc * 31 + c.charCodeAt(0), 7),
-          ),
-          date: d,
-          isDefault: true,
-        });
-      }
-    }
-
-    // 2. Merge custom data
+    // Merge custom data
     Object.entries(scheduleData).forEach(([slotHour, slot]) => {
       if (slot.vouchers && slot.vouchers.length > 0) {
-        // Remove default vouchers for this specific slot hour if custom ones exist
-        const hInt = parseInt(slotHour);
-        const filtered = allVouchers.filter((v) => v.date.getHours() !== hInt || !v.isDefault);
-        allVouchers.length = 0;
-        allVouchers.push(...filtered);
-
         // Add the custom vouchers
         slot.vouchers.forEach((v) => {
           const [h, m] = v.time.split(":").map(Number);
           const d = new Date(now);
           d.setHours(h, m, 0, 0);
-          allVouchers.push({ code: v.code, date: d, isDefault: false });
+          allVouchers.push({ code: v.code, date: d });
         });
       }
     });
 
     return allVouchers.sort((a, b) => a.date.getTime() - b.date.getTime());
-  }, [scheduleData, now, dateKey]);
+  }, [scheduleData, now]);
 
   const { activeVouchers, next, isLive, isOverridePeriod, secondsToLive } = useMemo(() => {
     const nowTime = now.getTime();
@@ -319,6 +301,7 @@ function Index() {
   }, []);
 
   return (
+<<<<<<< HEAD
     <main className="w-full max-w-full overflow-x-hidden min-h-screen flex flex-col relative bg-background text-foreground">
       {/* Background Aurora Orbs */}
       <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] overflow-hidden -z-10 opacity-60">
@@ -327,6 +310,9 @@ function Index() {
         <div className="absolute top-40 left-1/3 w-[350px] h-[350px] rounded-full bg-[#F5A623]/20 blur-[100px]" />
       </div>
 
+=======
+    <main className="w-full max-w-full overflow-x-hidden min-h-screen flex flex-col">
+>>>>>>> 30dbb9738176ad2667fb5c6c010ef26666dc97a2
       {/* Top bar */}
       <header className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-6 md:px-12 text-center sm:text-left">
         <div className="flex items-center gap-2.5 font-bold tracking-tight text-foreground">
@@ -420,6 +406,7 @@ function Index() {
             🎉 Pop the popper
           </button>
         </div>
+<<<<<<< HEAD
 
         {/* Video Embed */}
         <div className="mt-8 w-full max-w-xl px-4 mx-auto">
@@ -436,6 +423,8 @@ function Index() {
             />
           </div>
         </div>
+=======
+>>>>>>> 30dbb9738176ad2667fb5c6c010ef26666dc97a2
       </section>
 
       {/* Schedule */}
