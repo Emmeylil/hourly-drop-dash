@@ -33,27 +33,41 @@
 
 :root {
   --radius: 1.25rem;
-  /* Vivid orange brand */
-  --background: oklch(0.78 0.18 60);
-  --foreground: oklch(0.18 0.04 50);
-  --card: oklch(0.22 0.02 50);
-  --card-foreground: oklch(0.98 0.01 80);
-  --primary: oklch(0.78 0.18 60);
-  --primary-foreground: oklch(0.18 0.04 50);
-  --secondary: oklch(0.22 0.02 50);
-  --secondary-foreground: oklch(0.98 0.01 80);
-  --muted: oklch(0.72 0.16 60);
-  --muted-foreground: oklch(0.28 0.05 50);
-  --accent: oklch(0.85 0.16 70);
-  --accent-foreground: oklch(0.18 0.04 50);
-  --border: oklch(0.18 0.04 50 / 15%);
-  --ring: oklch(0.22 0.02 50);
-  --ink: oklch(0.18 0.04 50);
-  --ink-foreground: oklch(0.98 0.01 80);
+  
+  /* Brand Festival Palette */
+  --brand-orange: #F68B1E;
+  --amber-aurora-start: #F68B1E;
+  --amber-aurora-mid: #F5A623;
+  --amber-aurora-end: #E07A00;
+  
+  --iris-aurora-start: #7C3AED;
+  --iris-aurora-mid: #8B5CF6;
+  --iris-aurora-end: #A855F7;
+
+  --background: #0f0d1a;
+  --foreground: #ffffff;
+  --card: #181427;
+  --card-foreground: #ffffff;
+  --primary: #F68B1E;
+  --primary-foreground: #ffffff;
+  --secondary: #8B5CF6;
+  --secondary-foreground: #ffffff;
+  --muted: #2d2444;
+  --muted-foreground: #baafd8;
+  --accent: #F5A623;
+  --accent-foreground: #0f0d1a;
+  --border: rgba(139, 92, 246, 0.25);
+  --ring: #F68B1E;
+  --ink: #0f0d1a;
+  --ink-foreground: #ffffff;
+
+  --gradient-amber-aurora: linear-gradient(135deg, #F68B1E 0%, #F5A623 50%, #E07A00 100%);
+  --gradient-iris-aurora: linear-gradient(135deg, #7C3AED 0%, #8B5CF6 50%, #A855F7 100%);
+  --gradient-brand-fest: linear-gradient(135deg, #F68B1E 0%, #F5A623 35%, #8B5CF6 85%, #7C3AED 100%);
 
   --shadow-card:
-    0 25px 60px -20px oklch(0.18 0.04 50 / 45%), 0 10px 25px -10px oklch(0.18 0.04 50 / 30%);
-  --gradient-bg: radial-gradient(ellipse at top, oklch(0.85 0.17 65), oklch(0.74 0.18 55));
+    0 25px 60px -20px rgba(124, 58, 237, 0.35), 0 10px 25px -10px rgba(246, 139, 30, 0.25);
+  --gradient-bg: radial-gradient(ellipse at 50% 0%, #2d1b4e 0%, #17112b 45%, #0b0816 100%);
 }
 
 @layer base {

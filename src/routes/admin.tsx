@@ -132,43 +132,48 @@ function Admin() {
 
   if (authLoading) {
     return (
-      <main className="min-h-screen bg-[#ff9900] flex items-center justify-center p-6 text-[#1a1a1a]">
-        <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin" />
+      <main className="min-h-screen bg-[#0f0d1a] flex items-center justify-center p-6 text-white">
+        <div className="w-10 h-10 border-4 border-[#F68B1E] border-t-transparent rounded-full animate-spin" />
       </main>
     );
   }
 
   if (!user) {
     return (
-      <main className="min-h-screen bg-[#ff9900] flex items-center justify-center p-6 text-[#1a1a1a]">
+      <main className="min-h-screen bg-[#0f0d1a] flex items-center justify-center p-6 text-white">
         <form
           onSubmit={handleLogin}
-          className="bg-white rounded-2xl sm:rounded-[2rem] p-6 sm:p-8 w-full max-w-md shadow-2xl"
+          className="bg-[#181427] border border-[#8B5CF6]/30 rounded-2xl sm:rounded-[2rem] p-6 sm:p-8 w-full max-w-md shadow-2xl"
         >
-          <h1 className="text-3xl font-black mb-6">Admin Login</h1>
-          {authError && <div className="mb-4 text-red-500 text-sm font-bold">{authError}</div>}
+          <div className="mb-6 text-center">
+            <span className="inline-block px-3 py-1 rounded-full bg-[#F68B1E]/10 border border-[#F68B1E]/30 text-[10px] font-black uppercase tracking-widest text-[#F5A623] mb-2">
+              Jumia Brand Festival
+            </span>
+            <h1 className="text-3xl font-black text-white">Admin Login</h1>
+          </div>
+          {authError && <div className="mb-4 text-red-400 text-sm font-bold text-center">{authError}</div>}
           <div className="space-y-4 mb-6">
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4a90a4] mb-2">
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#F5A623] mb-2">
                 Email
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-[#f8fdff] border-2 border-[#4a90a4]/10 rounded-xl px-4 py-3 font-bold text-sm outline-none focus:border-[#4a90a4]/50"
+                className="w-full bg-[#241c3a] border-2 border-[#8B5CF6]/20 rounded-xl px-4 py-3 font-bold text-sm text-white outline-none focus:border-[#F68B1E]"
                 required
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4a90a4] mb-2">
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#F5A623] mb-2">
                 Password
               </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-[#f8fdff] border-2 border-[#4a90a4]/10 rounded-xl px-4 py-3 font-bold text-sm outline-none focus:border-[#4a90a4]/50"
+                className="w-full bg-[#241c3a] border-2 border-[#8B5CF6]/20 rounded-xl px-4 py-3 font-bold text-sm text-white outline-none focus:border-[#F68B1E]"
                 required
               />
             </div>
@@ -176,7 +181,7 @@ function Admin() {
           <button
             type="submit"
             disabled={authLoading}
-            className="w-full py-4 rounded-xl bg-[#4a90a4] text-white font-black uppercase tracking-widest text-xs disabled:opacity-50 hover:scale-[1.02] active:scale-[0.98] transition-all"
+            className="w-full py-4 rounded-xl bg-gradient-to-r from-[#F68B1E] via-[#F5A623] to-[#8B5CF6] text-white font-black uppercase tracking-widest text-xs disabled:opacity-50 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-[#F68B1E]/20"
           >
             {authLoading ? "Logging in..." : "Login"}
           </button>
@@ -186,29 +191,29 @@ function Admin() {
   }
 
   return (
-    <main className="min-h-screen bg-[#ff9900] p-6 md:p-12 text-[#1a1a1a]">
+    <main className="min-h-screen bg-[#0f0d1a] p-6 md:p-12 text-white">
       <div className="max-w-6xl mx-auto">
         <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <h1 className="text-4xl font-black tracking-tight mb-2 text-white">
-              Admin <span className="text-[#1a1a1a]">Dashboard</span>
+              Admin <span className="bg-gradient-to-r from-[#F68B1E] to-[#8B5CF6] bg-clip-text text-transparent">Dashboard</span>
             </h1>
-            <p className="text-white/80 font-bold uppercase tracking-widest text-xs">
-              Voucher Management System
+            <p className="text-[#F5A623] font-bold uppercase tracking-widest text-xs">
+              Brand Festival Voucher Management System
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto">
             <button
               onClick={handleLogout}
-              className="px-4 py-3 sm:py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-colors font-bold uppercase tracking-widest text-[10px] text-center"
+              className="px-4 py-3 sm:py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-colors font-bold uppercase tracking-widest text-[10px] text-center border border-white/10"
             >
               Logout
             </button>
-            <div className="flex items-center justify-between sm:justify-start gap-3 bg-white p-3 rounded-2xl shadow-xl shadow-blue-900/5 border border-[#4a90a4]/20">
+            <div className="flex items-center justify-between sm:justify-start gap-3 bg-[#181427] p-3 rounded-2xl shadow-xl border border-[#8B5CF6]/30">
               <button
                 onClick={() => changeDay(-1)}
-                className="p-2 hover:bg-[#4a90a4]/10 rounded-xl transition-colors text-[#4a90a4]"
+                className="p-2 hover:bg-[#8B5CF6]/20 rounded-xl transition-colors text-[#F5A623]"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -222,7 +227,7 @@ function Admin() {
 
               <input
                 type="date"
-                className="bg-transparent border-none font-bold text-[#1a1a1a] focus:ring-0 outline-none cursor-pointer px-2"
+                className="bg-transparent border-none font-bold text-white focus:ring-0 outline-none cursor-pointer px-2"
                 value={dateKey}
                 onChange={(e) => {
                   const [y, m, d] = e.target.value.split("-").map(Number);
@@ -232,7 +237,7 @@ function Admin() {
 
               <button
                 onClick={() => changeDay(1)}
-                className="p-2 hover:bg-[#4a90a4]/10 rounded-xl transition-colors text-[#4a90a4]"
+                className="p-2 hover:bg-[#8B5CF6]/20 rounded-xl transition-colors text-[#F5A623]"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -248,7 +253,7 @@ function Admin() {
         </header>
 
         {error && (
-          <div className="mb-8 p-5 bg-red-50 border-2 border-red-100 rounded-2xl text-red-600 text-sm font-medium animate-shake">
+          <div className="mb-8 p-5 bg-red-950/40 border-2 border-red-800 rounded-2xl text-red-300 text-sm font-medium animate-shake">
             <div className="flex items-center gap-3">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path
@@ -264,8 +269,8 @@ function Admin() {
 
         <div className="space-y-6 relative">
           {loading && (
-            <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-sm flex items-center justify-center rounded-3xl">
-              <div className="w-10 h-10 border-4 border-[#d48a94] border-t-transparent rounded-full animate-spin" />
+            <div className="absolute inset-0 z-10 bg-[#0f0d1a]/80 backdrop-blur-sm flex items-center justify-center rounded-3xl">
+              <div className="w-10 h-10 border-4 border-[#F68B1E] border-t-transparent rounded-full animate-spin" />
             </div>
           )}
 
@@ -283,14 +288,14 @@ function Admin() {
             return (
               <div
                 key={hour}
-                className="bg-white rounded-2xl sm:rounded-[2rem] p-5 sm:p-8 border border-[#4a90a4]/10 shadow-lg shadow-blue-900/5 transition-all group"
+                className="bg-[#181427] rounded-2xl sm:rounded-[2rem] p-5 sm:p-8 border border-[#8B5CF6]/30 shadow-lg shadow-purple-950/20 transition-all group"
               >
                 <div className="flex items-center justify-between mb-8">
-                  <span className="text-sm font-black uppercase tracking-[0.4em] text-[#1a1a1a]">
+                  <span className="text-sm font-black uppercase tracking-[0.4em] text-white">
                     {hourLabel}
                   </span>
                   <div
-                    className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${slotData.vouchers.length > 0 ? "bg-[#d48a94]/10 text-[#d48a94]" : "bg-gray-100 text-gray-400"}`}
+                    className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${slotData.vouchers.length > 0 ? "bg-[#F68B1E]/20 text-[#F5A623] border border-[#F68B1E]/30" : "bg-white/5 text-white/40"}`}
                   >
                     {slotData.vouchers.filter((v) => v.code).length} Scheduled
                   </div>
@@ -300,16 +305,16 @@ function Admin() {
                   {displayVouchers.map((v, idx) => (
                     <div
                       key={idx}
-                      className="space-y-3 p-4 bg-[#f8fdff] rounded-2xl border border-[#4a90a4]/5"
+                      className="space-y-3 p-4 bg-[#241c3a] rounded-2xl border border-[#8B5CF6]/15"
                     >
                       <div>
-                        <label className="text-[9px] font-bold uppercase text-[#4a90a4] mb-1 block">
+                        <label className="text-[9px] font-bold uppercase text-[#F5A623] mb-1 block">
                           Code
                         </label>
                         <input
                           type="text"
                           placeholder="Voucher code"
-                          className="w-full bg-white border-2 border-[#4a90a4]/5 rounded-xl px-3 py-2 font-mono text-sm font-bold text-[#1a1a1a] focus:border-[#d48a94] outline-none transition-all"
+                          className="w-full bg-[#181427] border border-[#8B5CF6]/30 rounded-xl px-3 py-2 font-mono text-sm font-bold text-white focus:border-[#F68B1E] outline-none transition-all"
                           value={v.code}
                           onChange={(e) => {
                             const nextVouchers = [...displayVouchers];
@@ -325,12 +330,12 @@ function Admin() {
                         />
                       </div>
                       <div>
-                        <label className="text-[9px] font-bold uppercase text-[#4a90a4] mb-1 block">
+                        <label className="text-[9px] font-bold uppercase text-[#F5A623] mb-1 block">
                           Live At
                         </label>
                         <input
                           type="time"
-                          className="w-full bg-white border-2 border-[#4a90a4]/5 rounded-xl px-3 py-2 text-sm font-black text-[#1a1a1a] focus:border-[#d48a94] outline-none transition-all"
+                          className="w-full bg-[#181427] border border-[#8B5CF6]/30 rounded-xl px-3 py-2 text-sm font-black text-white focus:border-[#F68B1E] outline-none transition-all"
                           value={v.time}
                           onChange={(e) => {
                             const nextVouchers = [...displayVouchers];
@@ -349,7 +354,7 @@ function Admin() {
                 <button
                   onClick={() => handleSave(hour, slots[String(hour)]?.vouchers || displayVouchers)}
                   disabled={saving === `${dateKey}-${hour}`}
-                  className="w-full py-4 rounded-xl bg-[#4a90a4] text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-[#4a90a4]/20 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 transition-all"
+                  className="w-full py-4 rounded-xl bg-gradient-to-r from-[#F68B1E] via-[#F5A623] to-[#8B5CF6] text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-[#F68B1E]/20 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 transition-all"
                 >
                   {saving === `${dateKey}-${hour}` ? "Syncing..." : "Update Schedule Set"}
                 </button>

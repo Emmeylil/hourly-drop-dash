@@ -7,24 +7,24 @@ import { doc, onSnapshot, collection, query, where } from "firebase/firestore";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Anniversary Voucher Drops — Weekdays, 8am & 8pm" },
+      { title: "Brand Festival Voucher Drops — Weekdays, 8am & 8pm" },
       {
         name: "description",
         content:
-          "Celebrate our anniversary! Fresh vouchers drop on the homepage weekdays at 8am and 8pm.",
+          "Celebrate Jumia Brand Festival! Fresh vouchers drop on the homepage weekdays at 8am and 8pm.",
       },
-      { property: "og:title", content: "Anniversary Voucher Drops — Weekdays, 8am & 8pm" },
+      { property: "og:title", content: "Brand Festival Voucher Drops — Weekdays, 8am & 8pm" },
       {
         property: "og:description",
         content:
-          "Celebrate our anniversary! Fresh vouchers drop on the homepage weekdays at 8am and 8pm.",
+          "Celebrate Jumia Brand Festival! Fresh vouchers drop on the homepage weekdays at 8am and 8pm.",
       },
     ],
   }),
   component: Index,
 });
 
-const PARTY_COLORS = ["#ff5e3a", "#ffd166", "#ef476f", "#06d6a0", "#118ab2", "#ffffff"];
+const PARTY_COLORS = ["#F68B1E", "#F5A623", "#8B5CF6", "#7C3AED", "#A855F7", "#ffffff"];
 
 function fireConfetti() {
   if (typeof window === "undefined") return;
@@ -102,7 +102,7 @@ function makeVoucherCode(seed: number) {
     x = (x * 1664525 + 1013904223) >>> 0;
     out += alphabet[x % alphabet.length];
   }
-  return `ANNIV-${out}`;
+  return `BRAND-${out}`;
 }
 
 function Index() {
@@ -319,95 +319,95 @@ function Index() {
   }, []);
 
   return (
-    <main className="w-full max-w-full overflow-x-hidden min-h-screen flex flex-col">
-      {/* Banner */}
-      <div className="w-full max-w-full sm:max-w-5xl mx-auto px-4 pt-4">
-        <picture className="block w-full max-w-full h-auto rounded-xl overflow-hidden shadow-md">
-          <source
-            media="(max-width: 768px)"
-            srcSet="https://ng.jumia.is/cms/0-6-anniversary/2026/Initiatives/Voucher-drop/730x292.gif"
-          />
-          <img
-            src="https://ng.jumia.is/cms/0-6-anniversary/2026/Initiatives/Voucher-drop/1152x252.gif"
-            alt="Anniversary Voucher Drop Banner"
-            className="block w-full max-w-full h-auto"
-          />
-        </picture>
+    <main className="w-full max-w-full overflow-x-hidden min-h-screen flex flex-col relative bg-background text-foreground">
+      {/* Background Aurora Orbs */}
+      <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] overflow-hidden -z-10 opacity-60">
+        <div className="absolute -top-32 left-1/4 w-[450px] h-[450px] rounded-full bg-[#F68B1E]/20 blur-[120px] animate-pulse" />
+        <div className="absolute -top-20 right-1/4 w-[500px] h-[500px] rounded-full bg-[#8B5CF6]/25 blur-[140px] animate-pulse" />
+        <div className="absolute top-40 left-1/3 w-[350px] h-[350px] rounded-full bg-[#F5A623]/20 blur-[100px]" />
       </div>
 
       {/* Top bar */}
       <header className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-6 md:px-12 text-center sm:text-left">
-        <div className="flex items-center gap-2 font-semibold tracking-tight text-foreground">
-          <span className="inline-block w-2.5 h-2.5 rounded-full bg-card animate-pulse-dot" />
-          Anniversary Voucher Drop
+        <div className="flex items-center gap-2.5 font-bold tracking-tight text-foreground">
+          <span className="inline-block w-3 h-3 rounded-full bg-gradient-to-r from-[#F68B1E] to-[#8B5CF6] animate-pulse-dot shadow-lg shadow-[#F68B1E]/50" />
+          <span className="bg-gradient-to-r from-[#F68B1E] via-[#F5A623] to-[#8B5CF6] bg-clip-text text-transparent font-extrabold text-lg sm:text-xl">
+            Brand Festival Drops
+          </span>
         </div>
-        <div className="text-xs uppercase tracking-[0.2em] text-foreground/70">
+        <div className="text-xs font-semibold uppercase tracking-[0.25em] px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/80 backdrop-blur-md shadow-sm">
           🎉 Weekdays · 8am & 8pm
         </div>
       </header>
 
       {/* Hero */}
       <section className="flex-1 flex flex-col items-center justify-center px-6 pb-16 text-center">
-        <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-card mb-3 animate-float-in">
-          🎊 Celebrating our anniversary 🎊
+        <p className="text-[11px] font-extrabold uppercase tracking-[0.4em] bg-gradient-to-r from-[#F68B1E] via-[#F5A623] to-[#8B5CF6] bg-clip-text text-transparent mb-3 animate-float-in">
+          ✨ Celebrating Jumia Brand Festival ✨
         </p>
-        <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-card mb-6 animate-float-in">
+        <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-white/80 mb-6 animate-float-in">
           {mounted ? (isLive ? "Drop active now" : "Next drop in") : "Loading drop…"}
         </p>
 
-        <h1 className="sr-only">Anniversary Hourly Voucher Drops</h1>
+        <h1 className="sr-only">Brand Festival Hourly Voucher Drops</h1>
 
-        {/* Card */}
+        {/* Card with Aurora Gradient Border */}
         <div
           key={next.getTime()}
-          className="animate-drop-in relative w-full max-w-xl rounded-2xl sm:rounded-[2rem] bg-card text-card-foreground px-5 py-8 sm:px-10 sm:py-10 md:px-14 md:py-12"
+          className="animate-drop-in relative w-full max-w-xl p-[2px] rounded-2xl sm:rounded-[2.2rem] bg-gradient-to-r from-[#F68B1E] via-[#F5A623] to-[#8B5CF6] shadow-2xl transition-transform"
           style={{ boxShadow: "var(--shadow-card)" }}
         >
-          <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.4em] text-primary mb-5">
-            {isLive ? "Tap to copy your code" : "Next drop @"}
-          </p>
+          <div className="w-full h-full rounded-2xl sm:rounded-[2.1rem] bg-[#181427] text-card-foreground px-5 py-8 sm:px-10 sm:py-10 md:px-14 md:py-12 relative overflow-hidden">
+            {/* Interior Glow */}
+            <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full bg-[#8B5CF6]/20 blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-24 -left-24 w-48 h-48 rounded-full bg-[#F68B1E]/20 blur-3xl pointer-events-none" />
 
-          {!mounted ? (
-            <div className="font-mono text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight text-card-foreground/40">
-              --:--:--
-            </div>
-          ) : isLive ? (
-            <div
-              className={`grid gap-4 ${activeVouchers.length > 1 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"}`}
-            >
-              {activeVouchers.map((code) => (
-                <button
-                  key={code}
-                  type="button"
-                  onClick={() => handleCopyVoucher(code)}
-                  className="group block w-full rounded-2xl border-2 border-dashed border-primary/50 px-3 py-4 sm:px-4 sm:py-6 hover:border-primary transition-colors"
-                  aria-label={`Copy voucher code ${code}`}
-                >
-                  <div className="font-mono text-lg sm:text-xl md:text-2xl font-bold tracking-[0.1em] text-card-foreground break-all uppercase">
-                    {code}
-                  </div>
-                  <div className="mt-2 text-[10px] uppercase tracking-[0.25em] text-primary font-semibold">
-                    {copiedCode === code ? "✓ Copied to clipboard" : "Tap to copy"}
-                  </div>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div className="flex items-end justify-center gap-2 sm:gap-4 md:gap-5 font-mono font-bold tabular-nums text-card-foreground">
-              <TimeBlock value={countdown.h} label="hrs" />
-              <span className="text-3xl sm:text-4xl md:text-6xl pb-1 sm:pb-2 opacity-40">:</span>
-              <TimeBlock value={countdown.m} label="min" />
-              <span className="text-3xl sm:text-4xl md:text-6xl pb-1 sm:pb-2 opacity-40">:</span>
-              <TimeBlock value={countdown.s} label="sec" />
-            </div>
-          )}
+            <p className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-[#F5A623] mb-5 relative z-10">
+              {isLive ? "Tap to copy your code" : "Next drop @"}
+            </p>
 
-          <div className="mt-6 text-xs uppercase tracking-[0.25em] text-card-foreground/50">
-            {isLive
-              ? isOverridePeriod
-                ? "Special extended drop"
-                : "Valid for 1 hour"
-              : `Drops at ${nextLabel}`}
+            {!mounted ? (
+              <div className="font-mono text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight text-white/40">
+                --:--:--
+              </div>
+            ) : isLive ? (
+              <div
+                className={`grid gap-4 ${activeVouchers.length > 1 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"}`}
+              >
+                {activeVouchers.map((code) => (
+                  <button
+                    key={code}
+                    type="button"
+                    onClick={() => handleCopyVoucher(code)}
+                    className="group relative block w-full rounded-2xl border-2 border-dashed border-[#F68B1E]/50 px-3 py-4 sm:px-4 sm:py-6 hover:border-[#8B5CF6] hover:bg-[#8B5CF6]/10 transition-all shadow-lg"
+                    aria-label={`Copy voucher code ${code}`}
+                  >
+                    <div className="font-mono text-lg sm:text-xl md:text-2xl font-black tracking-[0.12em] text-white group-hover:scale-105 transition-transform break-all uppercase">
+                      {code}
+                    </div>
+                    <div className="mt-2 text-[10px] uppercase tracking-[0.25em] text-[#F5A623] font-black">
+                      {copiedCode === code ? "✓ Copied to clipboard" : "Tap to copy"}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="flex items-end justify-center gap-2 sm:gap-4 md:gap-5 font-mono font-bold tabular-nums text-white">
+                <TimeBlock value={countdown.h} label="hrs" />
+                <span className="text-3xl sm:text-4xl md:text-6xl pb-1 sm:pb-2 text-[#8B5CF6]/60">:</span>
+                <TimeBlock value={countdown.m} label="min" />
+                <span className="text-3xl sm:text-4xl md:text-6xl pb-1 sm:pb-2 text-[#8B5CF6]/60">:</span>
+                <TimeBlock value={countdown.s} label="sec" />
+              </div>
+            )}
+
+            <div className="mt-6 text-xs uppercase tracking-[0.25em] text-white/60 font-semibold relative z-10">
+              {isLive
+                ? isOverridePeriod
+                  ? "Special extended drop"
+                  : "Valid for 1 hour"
+                : `Drops at ${nextLabel}`}
+            </div>
           </div>
         </div>
 
@@ -415,7 +415,7 @@ function Index() {
           <button
             type="button"
             onClick={handlePopper}
-            className="inline-flex items-center gap-2 rounded-full bg-foreground/10 text-foreground px-7 py-3.5 text-sm font-semibold tracking-wide hover:bg-foreground/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#F68B1E] via-[#F5A623] to-[#8B5CF6] text-white px-8 py-3.5 text-sm font-bold tracking-wide shadow-lg hover:shadow-[#F68B1E]/30 hover:scale-[1.03] active:scale-[0.98] transition-all"
           >
             🎉 Pop the popper
           </button>
@@ -423,16 +423,18 @@ function Index() {
 
         {/* Video Embed */}
         <div className="mt-8 w-full max-w-xl px-4 mx-auto">
-          <iframe
-            className="w-full max-w-full aspect-video md:w-[103%] md:translate-x-[-1.5%] bg-white p-2 rounded border-none max-h-[315px]"
-            style={{
-              backgroundColor: "white",
-            }}
-            src="https://www.youtube.com/embed/Kuszj-QsdS8?si=61QoQdYAuM_ZITnl"
-            title="YouTube video player"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-          />
+          <div className="p-1 rounded-2xl bg-gradient-to-r from-[#F68B1E]/30 via-[#F5A623]/20 to-[#8B5CF6]/30 shadow-xl">
+            <iframe
+              className="w-full max-w-full aspect-video rounded-xl border-none max-h-[315px]"
+              style={{
+                backgroundColor: "white",
+              }}
+              src="https://www.youtube.com/embed/Kuszj-QsdS8?si=61QoQdYAuM_ZITnl"
+              title="YouTube video player"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
+          </div>
         </div>
       </section>
 
@@ -440,10 +442,10 @@ function Index() {
       <section className="px-6 md:px-12 pb-12">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xs font-bold uppercase tracking-[0.3em] text-foreground/80">
+            <h2 className="text-xs font-bold uppercase tracking-[0.3em] text-white/80">
               Today's drop schedule
             </h2>
-            <span className="text-xs text-foreground/60">{schedule.length} drops daily</span>
+            <span className="text-xs text-white/60 font-medium">{schedule.length} drops daily</span>
           </div>
           <div className="flex flex-wrap justify-center gap-2 md:gap-3">
             {schedule.map((hour) => {
@@ -454,12 +456,11 @@ function Index() {
                   key={hour}
                   className={`rounded-xl px-4 py-3 text-center text-xs font-mono font-semibold transition-all min-w-[85px] sm:min-w-[100px] ${
                     live
-                      ? "bg-card text-card-foreground scale-105"
+                      ? "bg-gradient-to-r from-[#F68B1E] to-[#8B5CF6] text-white scale-105 shadow-lg shadow-[#F68B1E]/30"
                       : passed
-                        ? "bg-foreground/5 text-foreground/40 line-through"
-                        : "bg-foreground/10 text-foreground"
+                        ? "bg-white/5 text-white/30 line-through border border-white/5"
+                        : "bg-white/10 text-white border border-white/10 hover:bg-white/15"
                   }`}
-                  style={live ? { boxShadow: "var(--shadow-card)" } : undefined}
                 >
                   {hour > 12 ? `${hour - 12}pm` : hour === 12 ? "12pm" : `${hour}am`}
                 </div>
@@ -470,8 +471,8 @@ function Index() {
       </section>
 
       {/* Footer */}
-      <footer className="px-6 md:px-12 py-8 text-center text-xs text-foreground/60 border-t border-foreground/10">
-        Voucher Drop Initiative · Drops refresh weekdays at 8am and 8pm
+      <footer className="px-6 md:px-12 py-8 text-center text-xs text-white/60 border-t border-white/10">
+        Brand Festival Initiative · Drops refresh weekdays at 8am and 8pm
       </footer>
     </main>
   );
