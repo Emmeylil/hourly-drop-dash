@@ -120,9 +120,10 @@ function Index() {
   const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const docId = `${dateKey}-${currentHour}`;
 
-  const [scheduleData, setScheduleData]: [Record<string, { vouchers: { code: string; time: string }[] }>, (val: Record<string, { vouchers: { code: string; time: string }[] }>) => void] = useState<
-    Record<string, { vouchers: { code: string; time: string }[] }>
-  >({});
+  const [scheduleData, setScheduleData]: [
+    Record<string, { vouchers: { code: string; time: string }[] }>,
+    (val: Record<string, { vouchers: { code: string; time: string }[] }>) => void,
+  ] = useState<Record<string, { vouchers: { code: string; time: string }[] }>>({});
 
   // Listen for all drops for today
   useEffect(() => {
@@ -408,21 +409,6 @@ function Index() {
           >
             🎉 Pop the popper
           </button>
-        </div>
-        {/* Video Embed */}
-        <div className="mt-8 w-full max-w-xl px-4 mx-auto">
-          <div className="p-1 rounded-2xl bg-gradient-to-r from-[#F68B1E]/30 via-[#F5A623]/20 to-[#8B5CF6]/30 shadow-xl">
-            <iframe
-              className="w-full max-w-full aspect-video rounded-xl border-none max-h-[315px]"
-              style={{
-                backgroundColor: "white",
-              }}
-              src="https://www.youtube.com/embed/Kuszj-QsdS8?si=61QoQdYAuM_ZITnl"
-              title="YouTube video player"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-            />
-          </div>
         </div>
       </section>
 
