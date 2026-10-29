@@ -120,7 +120,7 @@ function Index() {
   const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const docId = `${dateKey}-${currentHour}`;
 
-  const [scheduleData, setScheduleData] = useState<
+  const [scheduleData, setScheduleData]: [Record<string, { vouchers: { code: string; time: string }[] }>, (val: Record<string, { vouchers: { code: string; time: string }[] }>) => void] = useState<
     Record<string, { vouchers: { code: string; time: string }[] }>
   >({});
 
@@ -174,7 +174,7 @@ function Index() {
   }, [dateKey]);
 
   // Flatten all vouchers into a single timeline
-  const timeline = useMemo(() => {
+  const timeline: { code: string; date: Date }[] = useMemo(() => {
     const allVouchers: { code: string; date: Date }[] = [];
 
     // Merge custom data
@@ -193,7 +193,19 @@ function Index() {
     return allVouchers.sort((a, b) => a.date.getTime() - b.date.getTime());
   }, [scheduleData, now]);
 
-  const { activeVouchers, next, isLive, isOverridePeriod, secondsToLive } = useMemo(() => {
+  const {
+    activeVouchers,
+    next,
+    isLive,
+    isOverridePeriod,
+    secondsToLive,
+  }: {
+    activeVouchers: string[];
+    next: Date;
+    isLive: boolean;
+    isOverridePeriod: boolean;
+    secondsToLive: number;
+  } = useMemo(() => {
     const nowTime = now.getTime();
 
     // Temporary override to repush 8am voucher for 30 minutes from 10:45 AM to 11:16 AM on June 1, 2026
