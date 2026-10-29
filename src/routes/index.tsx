@@ -227,10 +227,10 @@ function Index() {
 
       if (now.getTime() < startDay.getTime()) {
         nextDay = new Date(startDay);
-        nextDay.setHours(SCHEDULED_HOURS[0], 0, 0, 0);
+        nextDay.setHours(0, 0, 0, 0);
       } else {
         nextDay.setDate(nextDay.getDate() + 1);
-        nextDay.setHours(SCHEDULED_HOURS[0], 0, 0, 0);
+        nextDay.setHours(0, 0, 0, 0);
       }
 
       while (!isDropDay(nextDay)) {
