@@ -7,17 +7,17 @@ import { doc, onSnapshot, collection, query, where } from "firebase/firestore";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Brand Festival Voucher Drops — Weekdays, 8am & 8pm" },
+      { title: "Black Friday Voucher Drops — Weekdays, 8am & 8pm" },
       {
         name: "description",
         content:
-          "Celebrate Jumia Brand Festival! Fresh vouchers drop on the homepage weekdays at 8am and 8pm.",
+          "Celebrate Jumia Black Friday! Fresh vouchers drop on the homepage weekdays at 8am and 8pm.",
       },
-      { property: "og:title", content: "Brand Festival Voucher Drops — Weekdays, 8am & 8pm" },
+      { property: "og:title", content: "Black Friday Voucher Drops — Weekdays, 8am & 8pm" },
       {
         property: "og:description",
         content:
-          "Celebrate Jumia Brand Festival! Fresh vouchers drop on the homepage weekdays at 8am and 8pm.",
+          "Celebrate Jumia Black Friday! Fresh vouchers drop on the homepage weekdays at 8am and 8pm.",
       },
     ],
   }),
@@ -309,7 +309,7 @@ function Index() {
         <div className="flex items-center gap-2.5 font-bold tracking-tight text-foreground">
           <span className="inline-block w-3 h-3 rounded-full bg-gradient-to-r from-[#F68B1E] to-[#8B5CF6] animate-pulse-dot shadow-lg shadow-[#F68B1E]/50" />
           <span className="bg-gradient-to-r from-[#F68B1E] via-[#F5A623] to-[#8B5CF6] bg-clip-text text-transparent font-extrabold text-lg sm:text-xl">
-            Brand Festival Drops
+            Black Friday Drops
           </span>
         </div>
         <div className="text-xs font-semibold uppercase tracking-[0.25em] px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/80 backdrop-blur-md shadow-sm">
@@ -320,13 +320,13 @@ function Index() {
       {/* Hero */}
       <section className="flex-1 flex flex-col items-center justify-center px-6 pb-16 text-center">
         <p className="text-[11px] font-extrabold uppercase tracking-[0.4em] bg-gradient-to-r from-[#F68B1E] via-[#F5A623] to-[#8B5CF6] bg-clip-text text-transparent mb-3 animate-float-in">
-          ✨ Celebrating Jumia Brand Festival ✨
+          ✨ Celebrating Jumia Black Friday ✨
         </p>
         <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-white/80 mb-6 animate-float-in">
           {mounted ? (isLive ? "Drop active now" : "Next drop in") : "Loading drop…"}
         </p>
 
-        <h1 className="sr-only">Brand Festival Hourly Voucher Drops</h1>
+        <h1 className="sr-only">Black Friday Hourly Voucher Drops</h1>
 
         {/* Card with Aurora Gradient Border */}
         <div
@@ -448,7 +448,7 @@ function Index() {
 
       {/* Footer */}
       <footer className="px-6 md:px-12 py-8 text-center text-xs text-white/60 border-t border-white/10">
-        Brand Festival Initiative · Drops refresh weekdays at 8am and 8pm
+        Black Friday Initiative · Drops refresh weekdays at 8am and 8pm
       </footer>
     </main>
   );

@@ -147,7 +147,7 @@ function Admin() {
         >
           <div className="mb-6 text-center">
             <span className="inline-block px-3 py-1 rounded-full bg-[#F68B1E]/10 border border-[#F68B1E]/30 text-[10px] font-black uppercase tracking-widest text-[#F5A623] mb-2">
-              Jumia Brand Festival
+              Jumia Black Friday
             </span>
             <h1 className="text-3xl font-black text-white">Admin Login</h1>
           </div>
@@ -199,7 +199,7 @@ function Admin() {
               Admin <span className="bg-gradient-to-r from-[#F68B1E] to-[#8B5CF6] bg-clip-text text-transparent">Dashboard</span>
             </h1>
             <p className="text-[#F5A623] font-bold uppercase tracking-widest text-xs">
-              Brand Festival Voucher Management System
+              Black Friday Voucher Management System
             </p>
           </div>
 
